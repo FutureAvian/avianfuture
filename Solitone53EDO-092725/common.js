@@ -1,3 +1,14 @@
+/*
+ * SoliTone - Musical Solitaire Game
+ * Copyright (c) 2024 Clint Higgins
+ * 
+ * 53-EDO music system, audio synthesis, and musical enhancements
+ * are original works by Clint Higgins.
+ * 
+ * Based on solitaire mechanics from:
+ * https://github.com/HectorVilas/solitaire by Hector Vilas
+ */
+
 // Shared constants and functions for SoliTone games
 
 // --- Constants ---

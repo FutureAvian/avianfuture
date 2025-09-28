@@ -1,3 +1,14 @@
+/*
+ * SoliTone - Musical Solitaire Game
+ * Copyright (c) 2024 Clint Higgins
+ * 
+ * Musical enhancements, visual effects, and game modifications
+ * are original works by Clint Higgins.
+ * 
+ * Based on solitaire mechanics from:
+ * https://github.com/HectorVilas/solitaire by Hector Vilas
+ */
+
 // Solitaire 53 EDO core logic and audio
 // Basic Klondike rules, with music and silly quit/end screens
 
@@ -394,14 +405,23 @@ function scheduleSwingNotes() {
     if (!musicEnabled || isGameOver) return;
     
     let interval = getIntervalMs();
+    let shouldGlitch = false;
+    
     if (swingEnabled && swingPattern[swingPatternIdx]) {
       interval *= swingPattern[swingPatternIdx];
+      // Detect glitch patterns (very fast intervals)
+      shouldGlitch = swingPattern[swingPatternIdx] <= 0.3;
     }
     swingPatternIdx = (swingPatternIdx + 1) % swingPattern.length;
     
     let timeout = setTimeout(() => {
       if (!musicEnabled) return;
-      playMusicStep();
+      
+      if (shouldGlitch) {
+        playGlitchStep();
+      } else {
+        playMusicStep();
+      }
       scheduleNext();
     }, interval);
     musicTimeouts.push(timeout);
@@ -418,7 +438,7 @@ function generateSwingPattern() {
   
   for (let i = 0; i < swingCount; i++) {
     let pos = Math.floor(Math.random() * cardCount);
-    let swingType = Math.floor(Math.random() * 4);
+    let swingType = Math.floor(Math.random() * 6); // Added 2 new glitch types
     
     switch (swingType) {
       case 0: // Pair grouping - slight delay
@@ -433,6 +453,17 @@ function generateSwingPattern() {
       case 3: // Triplet feel - subtle 2:1
         swingPattern[pos] = 1.3;
         if (pos + 1 < cardCount) swingPattern[pos + 1] = 0.7;
+        break;
+      case 4: // DJ Cut - rapid alternation
+        swingPattern[pos] = 0.25; // Very fast
+        if (pos + 1 < cardCount) swingPattern[pos + 1] = 0.25;
+        if (pos + 2 < cardCount) swingPattern[pos + 2] = 0.25;
+        if (pos + 3 < cardCount) swingPattern[pos + 3] = 0.25;
+        break;
+      case 5: // Stutter repeat - same note multiple times
+        swingPattern[pos] = 0.3;
+        if (pos + 1 < cardCount) swingPattern[pos + 1] = 0.3;
+        if (pos + 2 < cardCount) swingPattern[pos + 2] = 0.8; // Pause after stutter
         break;
     }
   }
@@ -567,6 +598,35 @@ function playMusicStep() {
   musicStepIdx++;
 }
 
+function playGlitchStep() {
+  if (cachedTriggeringCards.length === 0) return;
+  
+  let currentCard = cachedTriggeringCards[musicStepIdx % cachedTriggeringCards.length];
+  let currentNoteIdx = cardToEDONote(currentCard.suit, currentCard.value);
+  
+  // Choose glitch type
+  let glitchType = Math.random();
+  
+  if (glitchType < 0.5) {
+    // DJ Cut - alternate between current and previous note rapidly
+    if (lastNoteIdx !== null) {
+      playEDONote(lastNoteIdx, 0.05); // Very short
+      setTimeout(() => playEDONote(currentNoteIdx, 0.05), 25);
+    } else {
+      playEDONote(currentNoteIdx, 0.05);
+    }
+  } else {
+    // Stutter - repeat same note
+    playEDONote(currentNoteIdx, 0.05);
+  }
+  
+  // Highlight with glitch effect
+  highlightPlayingCard(currentCard);
+  
+  lastNoteIdx = currentNoteIdx;
+  musicStepIdx++;
+}
+
 function highlightPlayingCard(card) {
   // Special handling for stock cards - flash the visible stock card
   if (gameState.stock.includes(card)) {
@@ -691,10 +751,12 @@ function showQuitDialog() {
       <div style="font-size: 2em; margin-bottom: 40px;">Choose your fate:</div>
       <button id="quit-forever" style="background: #c00; color: #fff; border: none; padding: 16px 32px; border-radius: 8px; cursor: pointer; font-size: 1.2em; margin: 10px;">Quit... Forever</button>
       <button id="card-pickup" style="background: #060; color: #fff; border: none; padding: 16px 32px; border-radius: 8px; cursor: pointer; font-size: 1.2em; margin: 10px;">Play 53 Card Pickup</button>
+
     `;
     
     document.getElementById('quit-forever').onclick = () => quitForever();
     document.getElementById('card-pickup').onclick = () => window.location.href = 'pickup.html';
+
   }, 500);
 }
 

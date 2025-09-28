@@ -102,7 +102,7 @@ body {
   gap: 8px;
 }
 #swing-btn {
-  background: #630;
+  background: #ff9900;
   color: #fff;
   border: none;
   padding: 8px 12px;
@@ -141,7 +141,7 @@ body {
   display: inline-block;
 }
 #listen-btn {
-  background: #036;
+  background: #00ccff;
   color: #fff;
   border: none;
   padding: 8px 12px;
@@ -161,7 +161,7 @@ body {
   width: 80px;
 }
 #waveform-btn {
-  background: #606;
+  background: #ff3399;
   color: #fff;
   border: none;
   padding: 8px 12px;

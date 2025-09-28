@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SoliTone</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    * { cursor: grab !important; }
+    *:active { cursor: grabbing !important; }
+    button, input, label { cursor: pointer !important; }
+    button:active, input:active { cursor: pointer !important; }
+  </style>
 </head>
-<body style="cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="white" stroke="black" stroke-width="1" d="M12 2C8 2 5 5 5 9c0 2 1 4 2 5l5 8 5-8c1-1 2-3 2-5 0-4-3-7-7-7z"/></svg>'), grab;">
+<body style="cursor: grab;">
   <div id="hud">
     <h1 id="title">SoliTone</h1>
     <div id="accent-display" style="position: absolute; left: 20px; top: 50px; color: #ff0; font-size: 14px; z-index: 1001;"></div>
