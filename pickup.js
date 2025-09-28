@@ -47,7 +47,7 @@ function create53CardPickup() {
         faceUp: Math.random() > 0.5,
         x: Math.random() * 800 + 50,
         y: Math.random() * 200 + 20,
-        rotation: Math.random() * 360
+        rotation: 0
       });
     }
   }
@@ -56,7 +56,7 @@ function create53CardPickup() {
     faceUp: Math.random() > 0.5,
     x: Math.random() * 800 + 50,
     y: Math.random() * 200 + 20,
-    rotation: Math.random() * 360
+    rotation: 0
   });
 }
 
@@ -79,14 +79,16 @@ function handlePickupCardClick(e) {
   if (e.defaultPrevented) return;
   let idx = parseInt(e.target.getAttribute('data-idx'));
   let card = cardPickupCards[idx];
+  
+  // Single-click: flip card
   card.faceUp = !card.faceUp;
   
   if (musicEnabled) {
     if (card.suit !== 'joker') {
       let noteIdx = cardToEDONote(card.suit, card.value);
-      playEDONote(noteIdx);
+      playEDONoteWithEffects(noteIdx);
     } else {
-      playEDONote(52);
+      playEDONoteWithEffects(52);
     }
   }
   
@@ -162,10 +164,10 @@ function start53PickupMusic() {
       
       if (isAdjacent) {
         // Play both notes sustained for 1 second with 0.5 second fade out
-        playEDONote(lastNoteIdx, 1.5);
-        playEDONote(noteIdx, 1.5);
+        playEDONoteWithEffects(lastNoteIdx, 1.5);
+        playEDONoteWithEffects(noteIdx, 1.5);
       } else {
-        playEDONote(noteIdx);
+        playEDONoteWithEffects(noteIdx);
       }
       
       lastNoteIdx = noteIdx;
@@ -199,6 +201,13 @@ function setupDelayEffect() {
     delayNode.connect(feedbackNode);
     feedbackNode.connect(delayNode);
     delayNode.connect(audioCtx.destination);
+  } else if (!delayEnabled && delayNode) {
+    try {
+      delayNode.disconnect();
+      feedbackNode.disconnect();
+    } catch(e) {}
+    delayNode = null;
+    feedbackNode = null;
   }
 }
 
@@ -217,31 +226,53 @@ function playEDONoteWithEffects(idx, duration = 0.15) {
   
   osc.connect(gain);
   
+  // Connect to delay if enabled
   if (delayEnabled && delayNode) {
     gain.connect(delayNode);
   }
   
   gain.connect(audioCtx.destination);
   
-  osc.start();
+  let startTime = audioCtx.currentTime;
+  osc.start(startTime);
   
   if (sustainEnabled) {
-    sustainGains.push(gain);
+    sustainGains.push({osc, gain});
     setTimeout(() => {
-      if (sustainGains.includes(gain)) {
-        osc.stop();
-        sustainGains = sustainGains.filter(g => g !== gain);
+      let index = sustainGains.findIndex(item => item.osc === osc);
+      if (index !== -1) {
+        try {
+          osc.stop();
+        } catch(e) {}
+        sustainGains.splice(index, 1);
       }
     }, 2000);
   } else {
-    osc.stop(audioCtx.currentTime + (isAccented ? duration * 1.05 : duration));
+    let stopTime = startTime + (isAccented ? duration * 1.05 : duration);
+    osc.stop(stopTime);
   }
 }
 
 function stopAllSustainedNotes() {
-  sustainGains.forEach(gain => {
+  sustainGains.forEach(item => {
     try {
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+      // Fade out volume over 1.5 seconds
+      item.gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+      
+      // Increase delay feedback as volume decreases
+      if (delayEnabled && feedbackNode) {
+        feedbackNode.gain.exponentialRampToValueAtTime(0.8, audioCtx.currentTime + 1.5);
+      }
+      
+      setTimeout(() => {
+        try {
+          item.osc.stop();
+          // Reset feedback to normal level
+          if (feedbackNode) {
+            feedbackNode.gain.value = 0.4;
+          }
+        } catch(e) {}
+      }, 1600);
     } catch (e) {}
   });
   sustainGains = [];
@@ -543,6 +574,7 @@ function setupControlButtons() {
   document.getElementById('delay-toggle').addEventListener('click', () => {
     delayEnabled = !delayEnabled;
     document.getElementById('delay-toggle').textContent = `Delay: ${delayEnabled ? 'On' : 'Off'}`;
+    document.getElementById('delay-toggle').style.background = delayEnabled ? '#cc00ff' : '#9900cc';
     setupDelayEffect();
   });
   
@@ -577,18 +609,36 @@ function setupControlButtons() {
   });
   
   let sustainBtn = document.getElementById('sustain-toggle');
-  sustainBtn.addEventListener('mousedown', () => {
+  sustainBtn.addEventListener('mousedown', (e) => {
+    e.preventDefault();
     sustainEnabled = true;
     sustainBtn.style.background = '#ff66cc';
+    sustainBtn.textContent = 'Sustaining...';
   });
-  sustainBtn.addEventListener('mouseup', () => {
+  sustainBtn.addEventListener('mouseup', (e) => {
+    e.preventDefault();
     sustainEnabled = false;
     sustainBtn.style.background = '#ff0080';
+    sustainBtn.textContent = 'Hold to Sustain';
     stopAllSustainedNotes();
   });
-  sustainBtn.addEventListener('mouseleave', () => {
+  sustainBtn.addEventListener('mouseleave', (e) => {
     sustainEnabled = false;
     sustainBtn.style.background = '#ff0080';
+    sustainBtn.textContent = 'Hold to Sustain';
+    stopAllSustainedNotes();
+  });
+  sustainBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    sustainEnabled = true;
+    sustainBtn.style.background = '#ff66cc';
+    sustainBtn.textContent = 'Sustaining...';
+  });
+  sustainBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    sustainEnabled = false;
+    sustainBtn.style.background = '#ff0080';
+    sustainBtn.textContent = 'Hold to Sustain';
     stopAllSustainedNotes();
   });
 }
