@@ -10,50 +10,129 @@
     *:active { cursor: grabbing !important; }
     button, input, label { cursor: pointer !important; }
     button:active, input:active { cursor: pointer !important; }
+    .wave-btn {
+      width: 45px;
+      height: 35px;
+      background: #333;
+      color: #fff;
+      border: 2px solid #666;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      transition: transform 0.1s;
+    }
+    .wave-btn:active {
+      transform: scale(0.9);
+      background: #555;
+    }
+    #listen-btn {
+      background: #004080;
+    }
+    #listen-btn.backs {
+      background: #ff8000;
+    }
+    #music-toggle.on {
+      background: #008000;
+    }
+    #music-toggle.off {
+      background: #800000;
+    }
+    #reset-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #swing-btn {
+      background: #cccc00;
+      color: #000;
+    }
+    input[type="range"] {
+      accent-color: #888;
+    }
+    input[type="range"]::-webkit-slider-track {
+      background: #000;
+      border: 1px solid #eee;
+      height: 4px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      background: #888;
+    }
+    input[type="range"]::-moz-range-track {
+      background: #000;
+      border: 1px solid #eee;
+      height: 4px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      background: #888;
+      border: none;
+    }
   </style>
 </head>
 <body style="cursor: grab;">
   <div id="hud">
-    <h1 id="title">SoliTone</h1>
     <div id="accent-display" style="position: absolute; left: 20px; top: 50px; color: #ff0; font-size: 14px; z-index: 1001;"></div>
-    <div id="hud-controls">
-      <div id="control-grid">
-        <div id="sliders-row">
-          <div id="bpm-control">
-            <label for="bpm-slider">BPM</label>
-            <input type="range" id="bpm-slider" min="5.3" max="530" value="106" step="0.1">
-            <div id="bpm-labels">
-              <input type="number" id="bpm-value" min="5.3" max="530" value="106" step="0.1" style="width:60px;">
-            </div>
-          </div>
-          <div id="fundamental-control">
-            <label for="fundamental-slider">Fundamental / Step Zero</label>
-            <input type="range" id="fundamental-slider" min="80" max="1500" value="262">
-            <div id="fundamental-display">
-              <input type="number" id="fundamental-input" min="80" max="1500" value="262" style="width:60px;">Hz
-            </div>
-          </div>
+    <div style="position:absolute;top:50%;left:calc(50% - 210px);transform:translate(-50%,-50%);">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:120px;">
+        <div style="text-align:center;">
+          <div style="color:#fff;font-size:16px;">♥</div>
+          <button id="hearts-wave" class="wave-btn" data-wave="sine">~~~</button>
         </div>
-        <div id="controls-row">
-          <div id="music-trigger">
-            <label>Listen to:</label>
-            <button id="listen-btn">Fronts</button>
-          </div>
-          <div id="waveform-control">
-            <label>Waveform:</label>
-            <button id="waveform-btn">Sine</button>
-          </div>
-          <div id="swing-control">
-            <label>Swing:</label>
-            <button id="swing-btn">Off</button>
-          </div>
+        <div style="text-align:center;">
+          <div style="color:#fff;font-size:16px;">♦</div>
+          <button id="diamonds-wave" class="wave-btn" data-wave="sine">~~~</button>
+        </div>
+        <div style="text-align:center;">
+          <div style="color:#fff;font-size:16px;">♣</div>
+          <button id="clubs-wave" class="wave-btn" data-wave="triangle">^v^v</button>
+        </div>
+        <div style="text-align:center;">
+          <div style="color:#fff;font-size:16px;">♠</div>
+          <button id="spades-wave" class="wave-btn" data-wave="triangle">^v^v</button>
         </div>
       </div>
-      <div id="button-controls">
-        <button id="music-toggle">🔊</button>
-        <button id="reset-btn">Reset</button>
-        <button id="quit-btn">Quit</button>
-        <div id="note-type" style="color: #fff; font-size: 14px; margin-left: 16px; align-self: center;">♩ 1/4</div>
+    </div>
+    <div id="hud-controls" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:40px;padding:20px;">
+      <div style="text-align:center;display:flex;align-items:center;justify-content:center;">
+        <h1 id="title" style="margin:0;font-size:30px;">SoliTone</h1>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:15px;">
+        <div style="text-align:center;">
+          <label>Listen to:</label><br>
+          <button id="listen-btn" style="width:80px;height:30px;min-height:30px;" title="Fronts or Backs of cards generate tones.">Fronts</button>
+        </div>
+        <div style="text-align:center;">
+          <label for="tuning-select">Tuning:</label><br>
+          <select id="tuning-select" style="background:#333;color:#fff;border:1px solid #666;padding:4px;border-radius:4px;width:120px;" title="Alternating Steps: Hearts/clubs alternate even/odd steps, diamonds/spades fill upper range. Creates smooth microtonal intervals.">
+            <option value="0">Alternating Steps</option>
+            <option value="1">Perfect Fifths</option>
+            <option value="2">Major Triads</option>
+            <option value="3">Chromatic Blocks</option>
+          </select>
+        </div>
+        <div style="text-align:center;">
+          <label for="fundamental-slider">Fundamental</label><br>
+          <input type="range" id="fundamental-slider" min="80" max="1500" value="262" style="width:100px;"><br>
+          <input type="number" id="fundamental-input" min="80" max="1500" value="262" style="width:60px;">Hz
+        </div>
+
+      </div>
+      <div style="display:flex;flex-direction:column;gap:15px;">
+        <div style="text-align:center;">
+          <label for="bpm-slider">BPM</label><br>
+          <input type="range" id="bpm-slider" min="5.3" max="530" value="106" step="0.1" style="width:100px;display:block;margin:5px auto;"><br>
+          <input type="number" id="bpm-value" min="5.3" max="530" value="106" step="0.1" style="width:60px;display:block;margin:0 auto;position:relative;left:35px;">
+        </div>
+        <div id="note-type" style="color:#fff;font-size:16px;text-align:center;">♩ 1/4</div>
+        <div style="text-align:center;">
+          <label>Swing:</label><br>
+          <button id="swing-btn" style="width:60px;height:30px;" title="Randomly selects rhythmic variations.">Off</button>
+        </div>
+
+      </div>
+      <div style="display:flex;flex-direction:column;gap:15px;align-items:center;justify-content:center;">
+        <button id="music-toggle" style="width:60px;height:40px;font-size:24px;">🔊</button>
+        <button id="reset-btn" style="width:60px;height:40px;">Reset</button>
+        <button id="quit-btn" style="width:60px;height:40px;">Quit</button>
       </div>
     </div>
   </div>

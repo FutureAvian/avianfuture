@@ -37,6 +37,7 @@ const fundamentalInput = document.getElementById('fundamental-input');
 const listenBtn = document.getElementById('listen-btn');
 const musicToggle = document.getElementById('music-toggle');
 const waveformBtn = document.getElementById('waveform-btn');
+
 const startMenu = document.getElementById('start-menu');
 const playBtn = document.getElementById('play-btn');
 const quitBtn = document.getElementById('quit-btn');
@@ -587,11 +588,11 @@ function playMusicStep() {
   showAccentDisplay(noteIdx, lastNoteIdx, isAdjacent, isAccented);
   
   if (isAdjacent) {
-    // Play both notes sustained for 1 second with 0.5 second fade out
-    playEDONote(lastNoteIdx, 1.5);
-    playEDONote(noteIdx, 1.5);
+    let prevCard = cachedTriggeringCards[(musicStepIdx - 1) % cachedTriggeringCards.length];
+    playEDONote(lastNoteIdx, 1.5, prevCard.suit);
+    playEDONote(noteIdx, 1.5, card.suit);
   } else {
-    playEDONote(noteIdx);
+    playEDONote(noteIdx, 0.15, card.suit);
   }
   
   lastNoteIdx = noteIdx;
@@ -608,16 +609,15 @@ function playGlitchStep() {
   let glitchType = Math.random();
   
   if (glitchType < 0.5) {
-    // DJ Cut - alternate between current and previous note rapidly
     if (lastNoteIdx !== null) {
-      playEDONote(lastNoteIdx, 0.05); // Very short
-      setTimeout(() => playEDONote(currentNoteIdx, 0.05), 25);
+      let prevCard = cachedTriggeringCards[(musicStepIdx - 1) % cachedTriggeringCards.length];
+      playEDONote(lastNoteIdx, 0.05, prevCard ? prevCard.suit : null);
+      setTimeout(() => playEDONote(currentNoteIdx, 0.05, currentCard.suit), 25);
     } else {
-      playEDONote(currentNoteIdx, 0.05);
+      playEDONote(currentNoteIdx, 0.05, currentCard.suit);
     }
   } else {
-    // Stutter - repeat same note
-    playEDONote(currentNoteIdx, 0.05);
+    playEDONote(currentNoteIdx, 0.05, currentCard.suit);
   }
   
   // Highlight with glitch effect
@@ -730,6 +730,7 @@ fundamentalInput.addEventListener('input', e => {
 listenBtn.addEventListener('click', () => {
   musicMode = musicMode === 'faceup' ? 'facedown' : 'faceup';
   listenBtn.textContent = musicMode === 'faceup' ? 'Fronts' : 'Backs';
+  listenBtn.className = musicMode === 'facedown' ? 'backs' : '';
   updateTriggeringCards();
   if (musicEnabled && gameStarted) {
     startMusicLoop();
@@ -1116,6 +1117,7 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     musicEnabled = !musicEnabled;
     musicToggle.textContent = musicEnabled ? '🔊' : '🔇';
+    musicToggle.className = musicEnabled ? 'on' : 'off';
     if (musicEnabled) {
       startMusicLoop();
     } else {
@@ -1140,6 +1142,7 @@ playBtn.addEventListener('click', () => {
 musicToggle.addEventListener('click', () => {
   musicEnabled = !musicEnabled;
   musicToggle.textContent = musicEnabled ? '🔊' : '🔇';
+  musicToggle.className = musicEnabled ? 'on' : 'off';
   if (musicEnabled && gameStarted) {
     startMusicLoop();
   } else {
@@ -1147,13 +1150,34 @@ musicToggle.addEventListener('click', () => {
   }
 });
 
-// --- Waveform Selector ---
-const waveforms = ['sine', 'sawtooth', 'square', 'triangle'];
-let waveformIndex = 0;
-waveformBtn.addEventListener('click', () => {
-  waveformIndex = (waveformIndex + 1) % waveforms.length;
-  waveform = waveforms[waveformIndex];
-  waveformBtn.textContent = waveform.charAt(0).toUpperCase() + waveform.slice(1);
+// --- Suit Waveform Selectors ---
+const waveforms = ['sine', 'triangle', 'sawtooth', 'square'];
+const waveSymbols = ['~~~', '^v^v', '/|/|', '▢▢▢'];
+let suitIndices = {hearts: 0, diamonds: 0, clubs: 1, spades: 1};
+
+['hearts', 'diamonds', 'clubs', 'spades'].forEach(suit => {
+  document.getElementById(`${suit}-wave`).addEventListener('click', () => {
+    suitIndices[suit] = (suitIndices[suit] + 1) % waveforms.length;
+    suitWaveforms[suit] = waveforms[suitIndices[suit]];
+    document.getElementById(`${suit}-wave`).textContent = waveSymbols[suitIndices[suit]];
+  });
+});
+
+// --- Tuning Dropdown ---
+const tuningDescriptions = [
+  'Alternating Steps: Hearts/clubs alternate even/odd steps, diamonds/spades fill upper range. Creates smooth microtonal intervals.',
+  'Perfect Fifths: Hearts are roots, diamonds are fifths above, clubs fill middle, spades are sevenths/octave. Emphasizes harmonic relationships.',
+  'Major Triads: Hearts are chord roots, diamonds are thirds, spades are fifths. Creates triadic harmonic structures.',
+  'Chromatic Blocks: Each suit occupies consecutive chromatic steps. Provides clear timbral separation by register.'
+];
+
+document.getElementById('tuning-select').addEventListener('change', (e) => {
+  currentTuning = parseInt(e.target.value);
+  e.target.title = tuningDescriptions[currentTuning];
+  updateTriggeringCards();
+  if (musicEnabled && gameStarted) {
+    startMusicLoop();
+  }
 });
 
 
