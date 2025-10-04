@@ -455,9 +455,33 @@ playBtn.addEventListener('click', () => {
   }, 1500);
 });
 
-backBtn.addEventListener('click', () => {
-  window.location.href = 'index.html';
-});
+// Expose function to start game automatically (for auto-start feature)
+window.startPickupGame = function() {
+  startMenu.style.display = 'none';
+  gameContainer.style.display = 'block';
+  gameStarted = true;
+  updateBackground();
+
+  // Initialize audio context on user interaction to bypass autoplay restrictions
+  if (!audioCtx || audioCtx.state === 'closed') {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  // Resume audio context if suspended
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
+  // Show empty background first
+  gameContainer.innerHTML = '<div id="pickup-area" style="position: relative; width: 900px; height: 300px; margin: 0 auto;"></div>';
+
+  // Create cards and drop them in after 1.5 seconds
+  setTimeout(() => {
+    create53CardPickup();
+    animateCardDrop();
+    setTimeout(() => start53PickupMusic(), 500);
+  }, 1500);
+};
 
 backToSolitaire.addEventListener('click', () => {
   window.location.href = 'index.html';

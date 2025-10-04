@@ -793,7 +793,10 @@ quitBtn.addEventListener('click', () => {
 });
 
 function showQuitDialog() {
+  // Stop the game music loop completely
   stopMusicLoop();
+  musicEnabled = false; // Ensure music is disabled
+
   gameContainer.style.opacity = 0;
   setTimeout(() => {
     endScreen.style.display = 'flex';
@@ -805,10 +808,19 @@ function showQuitDialog() {
     `;
 
     document.getElementById('quit-forever').onclick = () => quitForever();
-    document.getElementById('card-pickup').onclick = () => window.location.href = 'pickup.html';
+    document.getElementById('card-pickup').onclick = () => {
+      // Stop any quit screen music before switching
+      stopWindSounds();
+      morseTimeouts.forEach(timeout => clearTimeout(timeout));
+      morseTimeouts = [];
+      // Auto-start pickup game
+      window.location.href = 'pickup.html?autostart=true';
+    };
     document.getElementById('go-back').onclick = () => {
       endScreen.style.display = 'none';
       gameContainer.style.opacity = 1;
+      // Re-enable music for the game
+      musicEnabled = true;
       startMusicLoop();
     };
 

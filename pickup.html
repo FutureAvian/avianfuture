@@ -90,6 +90,25 @@
     <button id="back-to-solitaire" style="background: #c00; color: #fff; border: none; padding: 16px 32px; border-radius: 8px; cursor: pointer; font-size: 1.2em; margin: 10px;">Back to SoliTone</button>
   </div>
   <div id="game-container" style="display:none;"></div>
+
+  <!-- Auto-start game if coming from SoliTone -->
+  <script>
+    // Check if we should auto-start (from SoliTone quit screen)
+    if (window.location.search.includes('autostart=true') || document.referrer.includes('index.html')) {
+      document.getElementById('start-menu').style.display = 'none';
+      document.getElementById('game-container').style.display = 'block';
+
+      // Trigger the game start after page loads
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          if (window.startPickupGame) {
+            window.startPickupGame();
+          }
+        }, 100);
+      });
+    }
+  </script>
+
   <script src="common.js"></script>
   <script src="pickup.js"></script>
 </body>
