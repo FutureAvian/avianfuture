@@ -95,13 +95,55 @@ Restored 9-28 archive version as the main codebase and implemented comprehensive
 
 ---
 
+## Latest Updates (October 4, 2025 - Final)
+
+### SoliTone HUD Refinements
+- **Perfect alignment**: Listen button now aligns with 2x2 waveform grid top
+- **Tuning dropdown**: Bottom edge aligns with 2x2 grid bottom
+- **Reorganized columns**: Fundamental controls moved to Column 4 under BPM
+- **BMP slider positioning**: Top aligns with Listen button height
+- **Centered BPM readout**: Number input always centered under slider
+- **Swing moved**: Now under Delay button in Column 5
+- **Note subdivision**: Moved to Column 6 under Quit with helpful tooltip
+- **Hz/Notes toggle**: Click Hz button to switch to musical note names (C4, A#3, etc.)
+- **Enhanced tooltips**: All new controls have descriptive tooltips
+- **Improved fundamental button**: Light gray background when off, better visibility
+
+### Advanced Transitions
+- **Smooth swing disable**: Takes 2 beats to fade out instead of instant stop
+- **Delay decay**: 1.5 second fade-out when disabled instead of abrupt cutoff
+- **Visual feedback**: Swing button shows "Fading..." during transition
+
+### 53 Pickup Complete Overhaul
+- **Music autoplay fixed**: Audio context properly initializes on user interaction
+- **4x2 button grid**: Organized into 4 columns × 2 rows with perfect alignment
+  - **Column 1**: All Face Up / All Face Down (stacked vertically)
+  - **Column 2**: Stack Cards / Swing: Off (stacked vertically)  
+  - **Column 3**: Delay: Off / Sustain ⇧ (stacked vertically)
+  - **Column 4**: Random Durations / Random Rests (stacked vertically)
+- **Uniform button sizing**: All buttons same height (40px) and responsive width
+- **Card stack mechanics**: Cards drawn from stack automatically flip face up
+- **Z-index perfection**: Dragged cards always appear on top
+- **Visual click feedback**: All buttons flash brighter on click
+
+### Technical Improvements
+- **Fundamental frequency locking**: Can toggle between Hz and musical notes
+- **Smooth audio transitions**: No more jarring stops when effects are disabled
+- **Memory management**: Proper cleanup of audio nodes and timeouts
+- **Responsive design**: All controls maintain consistent sizing
+
+---
+
 ## Testing Notes
 - All buttons tested for visual state changes
 - Audio context initialization tested for autoplay compliance
-- Delay effect confirmed working with proper feedback
+- Delay effect confirmed working with proper feedback and fade-out
 - Fundamental harmony plays on accented notes when enabled
 - Card stacking and z-index ordering verified
 - Shift key sustain tested alongside mouse interaction
+- Hz/Notes toggle tested with proper frequency conversion
+- Smooth swing/delay transitions verified
+- 53 Pickup music loop confirmed working after fixes
 
 ---
 
@@ -111,3 +153,6 @@ Restored 9-28 archive version as the main codebase and implemented comprehensive
 - Victory scale plays full 53-EDO sequence with octave repetitions
 - Accent display intelligently manages multiple simultaneous messages
 - All control button states persist correctly through gameplay
+- Fundamental frequency can display as Hz or musical note names
+- Swing and delay effects have smooth enable/disable transitions
+- Card stacking in 53 Pickup works with proper face-up behavior
