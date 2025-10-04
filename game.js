@@ -31,6 +31,7 @@ let delayEnabled = false;
 let delayNode = null;
 let feedbackNode = null;
 let fundamentalHarmonyEnabled = false;
+let autoSubdivisionEnabled = true;
 
 // --- DOM Elements ---
 const bpmSlider = document.getElementById('bpm-slider');
@@ -59,7 +60,7 @@ function setupGame() {
   autoCompleteOffered = false;
   endOptionsShown = false;
   renderGameBoard();
-  updateNoteTypeDisplay();
+  updateNoteType();
   startMusicLoop();
   gameContainer.onclick = handleCardClick;
 }
@@ -546,7 +547,7 @@ function getTriggeringCards() {
 
 function updateTriggeringCards() {
   cachedTriggeringCards = getTriggeringCards();
-  updateNoteTypeDisplay();
+  updateNoteType();
 }
 
 function getTempoCardCount() {
@@ -688,23 +689,32 @@ function isMatchingCard(element, card, pile, idx) {
 
 // --- BPM Slider ---
 bpmSlider.addEventListener('input', e => {
-  bpm = parseFloat(bpmSlider.value);
-  bpmValue.value = bpm === 5.3 ? '5.3' : Math.round(bpm);
+  let val = parseFloat(bpmSlider.value);
+  bpm = val;
+  bpmValue.value = val === 5.3 ? '5.3' : Math.round(val);
   updateBackground();
   if (musicEnabled && gameStarted) {
     startMusicLoop();
   }
 });
+
 bpmValue.addEventListener('input', e => {
   let val = parseFloat(bpmValue.value);
-  if (val >= BPM_MIN && val <= BPM_MAX) {
+  if (!isNaN(val) && val >= 5.3 && val <= 530) {
     bpm = val;
     bpmSlider.value = val;
-    bpmValue.value = val === 5.3 ? '5.3' : Math.round(val);
     updateBackground();
     if (musicEnabled && gameStarted) {
       startMusicLoop();
     }
+  }
+});
+
+bpmValue.addEventListener('blur', e => {
+  // Ensure valid value on blur
+  let val = parseFloat(bpmValue.value);
+  if (isNaN(val) || val < 5.3 || val > 530) {
+    bpmValue.value = Math.round(bpm);
   }
 });
 
@@ -721,7 +731,7 @@ swingBtn.addEventListener('click', () => {
     setTimeout(() => {
       swingEnabled = false;
       swingTransitioning = false;
-      swingBtn.textContent = 'Off';
+      swingBtn.textContent = 'Swing Off';
       if (musicEnabled && gameStarted) {
         startMusicLoop();
       }
@@ -729,7 +739,7 @@ swingBtn.addEventListener('click', () => {
   } else {
     // Turning on - immediate
     swingEnabled = true;
-    swingBtn.textContent = 'On';
+    swingBtn.textContent = 'Swing On';
     if (musicEnabled && gameStarted) {
       startMusicLoop();
     }
@@ -740,17 +750,28 @@ swingBtn.addEventListener('click', () => {
 fundamentalSlider.addEventListener('input', e => {
   let rawFreq = parseInt(fundamentalSlider.value);
   fundamental = Math.round(snapToEDOFreq(rawFreq));
-  fundamentalInput.value = fundamental;
   fundamentalSlider.value = fundamental;
+  updateFundamentalDisplay();
   updateBackground();
 });
+
 fundamentalInput.addEventListener('input', e => {
-  let val = parseInt(fundamentalInput.value);
-  if (val >= 80 && val <= 1500) {
-    fundamental = Math.round(snapToEDOFreq(val));
-    fundamentalSlider.value = fundamental;
-    fundamentalInput.value = fundamental;
-    updateBackground();
+  if (freqMode === 'hz') {
+    let val = parseInt(fundamentalInput.value);
+    if (!isNaN(val) && val >= 80 && val <= 1500) {
+      fundamental = val;
+      fundamentalSlider.value = val;
+      updateBackground();
+    }
+  }
+});
+
+fundamentalInput.addEventListener('blur', e => {
+  if (freqMode === 'hz') {
+    let val = parseInt(fundamentalInput.value);
+    if (isNaN(val) || val < 80 || val > 1500) {
+      fundamentalInput.value = fundamental;
+    }
   }
 });
 
@@ -1254,6 +1275,23 @@ function updateFundamentalDisplay() {
   }
 }
 
+// --- Note Type Toggle ---
+const noteTypeEl = document.getElementById('note-type');
+if (noteTypeEl) {
+  noteTypeEl.addEventListener('click', () => {
+    autoSubdivisionEnabled = !autoSubdivisionEnabled;
+    if (autoSubdivisionEnabled) {
+      noteTypeEl.style.color = '#fff';
+      noteTypeEl.style.textShadow = '1px 1px 2px #000';
+      updateNoteType();
+    } else {
+      noteTypeEl.style.color = '#ff0000';
+      noteTypeEl.style.textShadow = '1px 1px 0px #fff, -1px -1px 0px #fff, 1px -1px 0px #fff, -1px 1px 0px #fff';
+      noteTypeEl.textContent = '♩ 1/4';
+    }
+  });
+}
+
 // --- Delay Toggle ---
 const delayToggle = document.getElementById('delay-toggle');
 if (delayToggle) {
@@ -1324,9 +1362,9 @@ function autoComplete() {
   updateTriggeringCards();
 }
 
-function updateNoteTypeDisplay() {
+function updateNoteType() {
   let noteTypeEl = document.getElementById('note-type');
-  if (!noteTypeEl) return;
+  if (!noteTypeEl || !autoSubdivisionEnabled) return;
   
   let cardCount = getTempoCardCount();
   let noteType;
