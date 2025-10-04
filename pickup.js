@@ -785,10 +785,13 @@ function setupControlButtons() {
 }
 
 function addHolographicEffect(element) {
-  const colors = ['#ff0080', '#0080ff', '#00ff80', '#ff8000', '#8000ff', '#ffff00'];
-  element.style.textShadow = '3px 3px 0px #000, 6px 6px 0px #222, 9px 9px 0px #444, 12px 12px 0px #666, 15px 15px 0px #888';
+  // Set initial styling
   element.style.color = '#fff';
   element.style.fontWeight = 'bold';
+  element.style.lineHeight = '0.8';
+  element.style.textShadow = '3px 3px 0px #000, 6px 6px 0px #222, 9px 9px 0px #444, 12px 12px 0px #666, 15px 15px 0px #888';
+  
+  const colors = ['#ff0080', '#0080ff', '#00ff80', '#ff8000', '#8000ff', '#ffff00'];
   
   let colorIndex = 0;
   setInterval(() => {
