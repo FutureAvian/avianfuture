@@ -143,10 +143,30 @@ function playEDONote(idx, duration = 0.15, suit = null) {
     gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + (noteDuration * 1.5) - 0.005);
   }
   
-  osc.connect(gain).connect(audioCtx.destination);
+  // Connect through delay if enabled (check if delayNode exists in game.js)
+  let destination = audioCtx.destination;
+  if (typeof delayNode !== 'undefined' && delayNode) {
+    osc.connect(gain).connect(delayNode);
+    gain.connect(destination); // Also connect directly
+  } else {
+    osc.connect(gain).connect(destination);
+  }
+  
   osc.start();
   let stopTime = waveform === 'sine' ? noteDuration * 1.5 : noteDuration;
   osc.stop(audioCtx.currentTime + stopTime);
+  
+  // Play fundamental with harmonics if enabled
+  if (typeof fundamentalHarmonyEnabled !== 'undefined' && fundamentalHarmonyEnabled && isAccented) {
+    let fundOsc = audioCtx.createOscillator();
+    fundOsc.type = 'sine';
+    fundOsc.frequency.value = fundamental;
+    let fundGain = audioCtx.createGain();
+    fundGain.gain.value = 0.15;
+    fundOsc.connect(fundGain).connect(destination);
+    fundOsc.start();
+    fundOsc.stop(audioCtx.currentTime + noteDuration);
+  }
   
   if (isAccented) {
     let reverbOsc = audioCtx.createOscillator();
@@ -156,7 +176,7 @@ function playEDONote(idx, duration = 0.15, suit = null) {
     reverbGain.gain.setValueAtTime(0, audioCtx.currentTime + 0.1);
     reverbGain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.12);
     reverbGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-    reverbOsc.connect(reverbGain).connect(audioCtx.destination);
+    reverbOsc.connect(reverbGain).connect(destination);
     reverbOsc.start(audioCtx.currentTime + 0.1);
     reverbOsc.stop(audioCtx.currentTime + 0.5);
   }
@@ -167,7 +187,7 @@ function playEDONote(idx, duration = 0.15, suit = null) {
     osc5.frequency.value = edoFreq(idx + 31);
     let gain5 = audioCtx.createGain();
     gain5.gain.value = 0.08;
-    osc5.connect(gain5).connect(audioCtx.destination);
+    osc5.connect(gain5).connect(destination);
     osc5.start();
     osc5.stop(audioCtx.currentTime + 0.1575);
     
@@ -176,7 +196,7 @@ function playEDONote(idx, duration = 0.15, suit = null) {
     osc3.frequency.value = edoFreq(idx + 17);
     let gain3 = audioCtx.createGain();
     gain3.gain.value = 0.1;
-    osc3.connect(gain3).connect(audioCtx.destination);
+    osc3.connect(gain3).connect(destination);
     osc3.start();
     osc3.stop(audioCtx.currentTime + 0.1575);
   }
@@ -188,6 +208,7 @@ function updateBackground() {
   let startColor = `hsl(${fundHue}, 40%, 25%)`;
   let endColor = `hsl(${bpmHue}, 45%, 20%)`;
   document.body.style.background = `linear-gradient(135deg, ${startColor}, ${endColor})`;
+  document.body.style.backgroundSize = '200% 200%';
 }
 
 // --- Morse Code ---

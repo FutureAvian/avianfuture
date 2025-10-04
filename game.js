@@ -140,8 +140,13 @@ function renderGameBoard() {
     pileEl.addEventListener('drop', handleDrop);
   });
   if (checkWin() && !isGameOver) {
+    isGameOver = true;
     stopMusicLoop();
     setTimeout(() => {
+      // Re-enable music context for victory scale
+      if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
       playVictoryScale();
       endGame(true);
     }, 3500);

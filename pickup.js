@@ -40,6 +40,7 @@ const backToSolitaire = document.getElementById('back-to-solitaire');
 // --- Game Setup ---
 function create53CardPickup() {
   cardPickupCards = [];
+  let idx = 0;
   for (let suit of CARD_SUITS) {
     for (let value of CARD_VALUES) {
       cardPickupCards.push({
@@ -47,7 +48,8 @@ function create53CardPickup() {
         faceUp: Math.random() > 0.5,
         x: Math.random() * 800 + 50,
         y: Math.random() * 200 + 20,
-        rotation: 0
+        rotation: 0,
+        zIndex: idx++
       });
     }
   }
@@ -56,8 +58,10 @@ function create53CardPickup() {
     faceUp: Math.random() > 0.5,
     x: Math.random() * 800 + 50,
     y: Math.random() * 200 + 20,
-    rotation: 0
+    rotation: 0,
+    zIndex: idx
   });
+  highestZIndex = idx;
 }
 
 function render53CardPickup() {
@@ -104,6 +108,8 @@ function handlePickupDragOver(e) {
   e.preventDefault();
 }
 
+let highestZIndex = 53;
+
 function handlePickupDrop(e) {
   e.preventDefault();
   let idx = parseInt(e.dataTransfer.getData('text/plain'));
@@ -111,6 +117,23 @@ function handlePickupDrop(e) {
   let rect = e.currentTarget.getBoundingClientRect();
   card.x = e.clientX - rect.left - 30;
   card.y = e.clientY - rect.top - 45;
+  
+  // Set as topmost card
+  highestZIndex++;
+  card.zIndex = highestZIndex;
+  
+  render53CardPickup();
+}
+
+function stackCards() {
+  // Gather all cards and stack them face down
+  cardPickupCards.forEach((card, idx) => {
+    card.x = 450;
+    card.y = 130;
+    card.faceUp = false;
+    card.zIndex = idx;
+  });
+  highestZIndex = cardPickupCards.length;
   render53CardPickup();
 }
 
@@ -380,6 +403,16 @@ playBtn.addEventListener('click', () => {
   gameStarted = true;
   updateBackground();
   
+  // Initialize audio context on user interaction to bypass autoplay restrictions
+  if (!audioCtx || audioCtx.state === 'closed') {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  
+  // Resume audio context if suspended
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  
   // Show empty background first
   gameContainer.innerHTML = '<div id="pickup-area" style="position: relative; width: 900px; height: 300px; margin: 0 auto;"></div>';
   
@@ -387,7 +420,7 @@ playBtn.addEventListener('click', () => {
   setTimeout(() => {
     create53CardPickup();
     animateCardDrop();
-    start53PickupMusic();
+    setTimeout(() => start53PickupMusic(), 500);
   }, 1500);
 });
 
@@ -429,10 +462,36 @@ resetBtn.addEventListener('click', () => {
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && gameStarted) {
+  if (!gameStarted) return;
+  
+  if (e.code === 'Space') {
     e.preventDefault();
     musicEnabled = !musicEnabled;
     musicToggle.textContent = musicEnabled ? '🔊' : '🔇';
+  }
+  
+  if (e.key === 'Shift' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+    e.preventDefault();
+    let sustainBtn = document.getElementById('sustain-toggle');
+    if (sustainBtn && !sustainEnabled) {
+      sustainEnabled = true;
+      sustainBtn.style.background = '#ff00cc';
+      sustainBtn.textContent = 'Sustain ⇧';
+    }
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  if (!gameStarted) return;
+  
+  if (e.key === 'Shift' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+    let sustainBtn = document.getElementById('sustain-toggle');
+    if (sustainBtn && sustainEnabled) {
+      sustainEnabled = false;
+      sustainBtn.style.background = '#ff0080';
+      sustainBtn.textContent = 'Sustain ⇧';
+      stopAllSustainedNotes();
+    }
   }
 });
 
@@ -479,7 +538,7 @@ function createCardElement(card, idx) {
       cardEl.style.width = '60px';
       cardEl.style.height = '90px';
       cardEl.style.cursor = 'grab';
-      cardEl.style.zIndex = idx;
+      cardEl.style.zIndex = card.zIndex || idx;
       cardEl.style.background = 'white';
       cardEl.style.border = '2px solid black';
       cardEl.style.borderRadius = '6px';
@@ -507,7 +566,7 @@ function createCardElement(card, idx) {
       cardEl.style.width = '60px';
       cardEl.style.height = '90px';
       cardEl.style.cursor = 'grab';
-      cardEl.style.zIndex = idx;
+      cardEl.style.zIndex = card.zIndex || idx;
       return cardEl;
     }
   } else {
@@ -522,7 +581,7 @@ function createCardElement(card, idx) {
     cardEl.style.width = '60px';
     cardEl.style.height = '90px';
     cardEl.style.cursor = 'grab';
-    cardEl.style.zIndex = idx;
+    cardEl.style.zIndex = card.zIndex || idx;
     return cardEl;
   }
 }
@@ -531,12 +590,14 @@ function addControlButtons() {
   let pickupArea = document.getElementById('pickup-area');
   let controlsHtml = `
     <div style="text-align: center; margin-top: 10px;">
-      <button id="all-face-up" style="background: #0080ff; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">All Face Up</button>
-      <button id="all-face-down" style="background: #ff6600; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">All Face Down</button>
-      <button id="delay-toggle" style="background: #9900cc; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">Delay: Off</button>
-      <button id="sustain-toggle" style="background: #ff0080; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px; user-select: none;">Hold to Sustain</button>
-      <button id="random-durations" style="background: #00cc66; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">Random Durations</button>
-      <button id="rest-toggle" style="background: #ffcc00; color: #000; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">Random Rests</button>
+      <button id="all-face-up" style="background: #0080ff; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">All Face Up</button>
+      <button id="all-face-down" style="background: #ff6600; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">All Face Down</button>
+      <button id="stack-cards-btn" style="background: #4040ff; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">Stack Cards</button>
+      <button id="delay-toggle" style="background: #9900cc; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">Delay: Off</button>
+      <button id="sustain-toggle" style="background: #ff0080; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; user-select: none; min-width: 160px; transition: background 0.2s;">Sustain ⇧</button>
+      <button id="swing-btn-pickup" style="background: #cccc00; color: #000; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">Swing: Off</button>
+      <button id="random-durations" style="background: #00cc66; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 160px; transition: background 0.2s;">Random Durations</button>
+      <button id="rest-toggle" style="background: #ffcc00; color: #000; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">Random Rests</button>
     </div>
   `;
   pickupArea.insertAdjacentHTML('afterend', controlsHtml);
@@ -560,51 +621,68 @@ function setupCardEvents() {
   pickupArea.addEventListener('mouseup', handleAreaMouseUp);
 }
 
+let swingEnabledPickup = false;
+
 function setupControlButtons() {
-  document.getElementById('all-face-up').addEventListener('click', () => {
+  document.getElementById('all-face-up').addEventListener('click', (e) => {
     cardPickupCards.forEach(card => card.faceUp = true);
     updatePickupButtons();
+    e.target.style.background = '#00a0ff';
+    setTimeout(() => e.target.style.background = '#0080ff', 150);
   });
   
-  document.getElementById('all-face-down').addEventListener('click', () => {
+  document.getElementById('all-face-down').addEventListener('click', (e) => {
     cardPickupCards.forEach(card => card.faceUp = false);
     updatePickupButtons();
+    e.target.style.background = '#ff8800';
+    setTimeout(() => e.target.style.background = '#ff6600', 150);
   });
   
-  document.getElementById('delay-toggle').addEventListener('click', () => {
+  document.getElementById('stack-cards-btn').addEventListener('click', (e) => {
+    stackCards();
+    e.target.style.background = '#6060ff';
+    setTimeout(() => e.target.style.background = '#4040ff', 150);
+  });
+  
+  document.getElementById('delay-toggle').addEventListener('click', (e) => {
     delayEnabled = !delayEnabled;
-    document.getElementById('delay-toggle').textContent = `Delay: ${delayEnabled ? 'On' : 'Off'}`;
-    document.getElementById('delay-toggle').style.background = delayEnabled ? '#cc00ff' : '#9900cc';
+    e.target.textContent = `Delay: ${delayEnabled ? 'On' : 'Off'}`;
+    e.target.style.background = delayEnabled ? '#cc00ff' : '#9900cc';
     setupDelayEffect();
   });
   
-  document.getElementById('random-durations').addEventListener('click', () => {
+  document.getElementById('swing-btn-pickup').addEventListener('click', (e) => {
+    swingEnabledPickup = !swingEnabledPickup;
+    e.target.textContent = `Swing: ${swingEnabledPickup ? 'On' : 'Off'}`;
+    e.target.style.background = swingEnabledPickup ? '#ffff00' : '#cccc00';
+    e.target.style.color = swingEnabledPickup ? '#000' : '#000';
+  });
+  
+  document.getElementById('random-durations').addEventListener('click', (e) => {
     randomDurations = !randomDurations;
-    let btn = document.getElementById('random-durations');
     if (randomDurations) {
       generateRandomDurations();
-      btn.textContent = 'Back to 8th Notes';
-      btn.style.background = '#ff3366';
+      e.target.textContent = 'Back to 8th Notes';
+      e.target.style.background = '#ff3366';
     } else {
       durationPattern = [];
-      btn.textContent = 'Random Durations';
-      btn.style.background = '#00cc66';
+      e.target.textContent = 'Random Durations';
+      e.target.style.background = '#00cc66';
     }
   });
   
-  document.getElementById('rest-toggle').addEventListener('click', () => {
+  document.getElementById('rest-toggle').addEventListener('click', (e) => {
     restsEnabled = !restsEnabled;
-    let btn = document.getElementById('rest-toggle');
     if (restsEnabled) {
       generateRestPattern();
-      btn.textContent = 'Unrest';
-      btn.style.background = '#ff9900';
-      btn.style.color = '#fff';
+      e.target.textContent = 'Unrest';
+      e.target.style.background = '#ff9900';
+      e.target.style.color = '#fff';
     } else {
       restPattern = [];
-      btn.textContent = 'Random Rests';
-      btn.style.background = '#ffcc00';
-      btn.style.color = '#000';
+      e.target.textContent = 'Random Rests';
+      e.target.style.background = '#ffcc00';
+      e.target.style.color = '#000';
     }
   });
   
@@ -612,27 +690,29 @@ function setupControlButtons() {
   sustainBtn.addEventListener('mousedown', (e) => {
     e.preventDefault();
     sustainEnabled = true;
-    sustainBtn.style.background = '#ff66cc';
-    sustainBtn.textContent = 'Sustaining...';
+    sustainBtn.style.background = '#ff00cc';
+    sustainBtn.textContent = 'Sustaining ⇧';
   });
   sustainBtn.addEventListener('mouseup', (e) => {
     e.preventDefault();
     sustainEnabled = false;
     sustainBtn.style.background = '#ff0080';
-    sustainBtn.textContent = 'Hold to Sustain';
+    sustainBtn.textContent = 'Sustain ⇧';
     stopAllSustainedNotes();
   });
   sustainBtn.addEventListener('mouseleave', (e) => {
-    sustainEnabled = false;
-    sustainBtn.style.background = '#ff0080';
-    sustainBtn.textContent = 'Hold to Sustain';
-    stopAllSustainedNotes();
+    if (sustainEnabled) {
+      sustainEnabled = false;
+      sustainBtn.style.background = '#ff0080';
+      sustainBtn.textContent = 'Sustain ⇧';
+      stopAllSustainedNotes();
+    }
   });
   sustainBtn.addEventListener('touchstart', (e) => {
     e.preventDefault();
     sustainEnabled = true;
-    sustainBtn.style.background = '#ff66cc';
-    sustainBtn.textContent = 'Sustaining...';
+    sustainBtn.style.background = '#ff00cc';
+    sustainBtn.textContent = 'Sustaining ⇧';
   });
   sustainBtn.addEventListener('touchend', (e) => {
     e.preventDefault();
