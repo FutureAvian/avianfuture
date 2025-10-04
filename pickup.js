@@ -21,6 +21,8 @@ let durationPattern = [];
 let restsEnabled = false;
 let restPattern = [];
 let lastNoteIdx = null;
+let waveform = 'sine'; // Add missing waveform variable
+let swingEnabledPickup = false; // Add missing swing variable
 
 // --- DOM Elements ---
 const bpmSlider = document.getElementById('bpm-slider');
@@ -706,8 +708,6 @@ function setupCardEvents() {
   pickupArea.addEventListener('mousemove', handleAreaMouseMove);
   pickupArea.addEventListener('mouseup', handleAreaMouseUp);
 }
-
-let swingEnabledPickup = false;
 
 function setupControlButtons() {
   document.getElementById('all-face-up').addEventListener('click', (e) => {
