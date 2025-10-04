@@ -431,6 +431,7 @@ musicToggle.addEventListener('click', () => {
 playBtn.addEventListener('click', () => {
   startMenu.style.display = 'none';
   gameContainer.style.display = 'block';
+  document.getElementById('hud').style.display = 'flex';
   gameStarted = true;
   updateBackground();
   
