@@ -709,11 +709,30 @@ bpmValue.addEventListener('input', e => {
 });
 
 // --- Swing Button ---
+let swingTransitioning = false;
 swingBtn.addEventListener('click', () => {
-  swingEnabled = !swingEnabled;
-  swingBtn.textContent = swingEnabled ? 'On' : 'Off';
-  if (musicEnabled && gameStarted) {
-    startMusicLoop();
+  if (swingTransitioning) return;
+  
+  if (swingEnabled) {
+    // Turning off - smooth transition over 2 beats
+    swingTransitioning = true;
+    swingBtn.textContent = 'Fading...';
+    let beatDuration = 60000 / bpm; // milliseconds per beat
+    setTimeout(() => {
+      swingEnabled = false;
+      swingTransitioning = false;
+      swingBtn.textContent = 'Off';
+      if (musicEnabled && gameStarted) {
+        startMusicLoop();
+      }
+    }, beatDuration * 2);
+  } else {
+    // Turning on - immediate
+    swingEnabled = true;
+    swingBtn.textContent = 'On';
+    if (musicEnabled && gameStarted) {
+      startMusicLoop();
+    }
   }
 });
 
@@ -1204,9 +1223,35 @@ const fundamentalHarmonyBtn = document.getElementById('fundamental-harmony-btn')
 if (fundamentalHarmonyBtn) {
   fundamentalHarmonyBtn.addEventListener('click', () => {
     fundamentalHarmonyEnabled = !fundamentalHarmonyEnabled;
-    fundamentalHarmonyBtn.style.background = fundamentalHarmonyEnabled ? '#080' : '#444';
+    fundamentalHarmonyBtn.style.background = fundamentalHarmonyEnabled ? '#080' : '#888';
     fundamentalHarmonyBtn.style.borderColor = fundamentalHarmonyEnabled ? '#0f0' : '#666';
   });
+}
+
+// --- Hz/Notes Mode Toggle ---
+let freqMode = 'hz'; // 'hz' or 'notes'
+const freqModeBtn = document.getElementById('freq-mode-btn');
+const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+if (freqModeBtn) {
+  freqModeBtn.addEventListener('click', () => {
+    freqMode = freqMode === 'hz' ? 'notes' : 'hz';
+    freqModeBtn.textContent = freqMode === 'hz' ? 'Hz' : '♪';
+    updateFundamentalDisplay();
+  });
+}
+
+function updateFundamentalDisplay() {
+  if (freqMode === 'notes') {
+    let noteNum = Math.round(12 * Math.log2(fundamental / 440)) + 69; // A4 = 440Hz = note 69
+    let octave = Math.floor(noteNum / 12) - 1;
+    let note = noteNames[noteNum % 12];
+    fundamentalInput.value = `${note}${octave}`;
+    fundamentalInput.style.width = '40px';
+  } else {
+    fundamentalInput.value = fundamental;
+    fundamentalInput.style.width = '60px';
+  }
 }
 
 // --- Delay Toggle ---
@@ -1233,12 +1278,18 @@ function setupDelayEffect() {
     feedbackNode.connect(delayNode);
     delayNode.connect(audioCtx.destination);
   } else if (!delayEnabled && delayNode) {
-    try {
-      delayNode.disconnect();
-      feedbackNode.disconnect();
-    } catch (e) {}
-    delayNode = null;
-    feedbackNode = null;
+    // Fade out delay over 1.5 seconds
+    if (feedbackNode) {
+      feedbackNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+    }
+    setTimeout(() => {
+      try {
+        if (delayNode) delayNode.disconnect();
+        if (feedbackNode) feedbackNode.disconnect();
+      } catch (e) {}
+      delayNode = null;
+      feedbackNode = null;
+    }, 1600);
   }
 }
 

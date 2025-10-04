@@ -99,9 +99,9 @@
         </div>
       </div>
       
-      <!-- Column 3: Listen + Tuning + Fundamental -->
+      <!-- Column 3: Listen + Tuning -->
       <div style="display:flex;flex-direction:column;gap:8px;min-width:140px;">
-        <div style="text-align:center;">
+        <div style="text-align:center;margin-top:14px;">
           <label style="font-size:11px;">Listen to:</label><br>
           <button id="listen-btn" style="width:90px;height:28px;min-width:90px;min-height:28px;">Fronts</button>
         </div>
@@ -114,40 +114,40 @@
             <option value="3">Chromatic Blocks</option>
           </select>
         </div>
-        <div style="text-align:center;">
-          <label for="fundamental-slider" style="font-size:11px;">Fundamental</label>
-          <div style="display:flex;align-items:center;gap:4px;justify-content:center;">
-            <input type="range" id="fundamental-slider" min="80" max="1500" value="262" style="width:80px;">
-            <button id="fundamental-harmony-btn" title="Play fundamental with harmonics" style="width:28px;height:28px;padding:2px;font-size:16px;background:#444;border:1px solid #666;border-radius:4px;min-width:28px;">🎵</button>
-          </div>
-          <input type="number" id="fundamental-input" min="80" max="1500" value="262" style="width:60px;font-size:11px;height:22px;">Hz
-        </div>
       </div>
       
-      <!-- Column 4: BPM + Note Division + Swing -->
+      <!-- Column 4: BPM + Fundamental -->
       <div style="display:flex;flex-direction:column;gap:8px;min-width:90px;">
-        <div style="text-align:center;">
+        <div style="text-align:center;margin-top:14px;">
           <label for="bpm-slider" style="font-size:11px;">BPM</label><br>
           <input type="range" id="bpm-slider" min="5.3" max="530" value="106" step="0.1" style="width:80px;">
           <input type="number" id="bpm-value" min="5.3" max="530" value="106" step="0.1" style="width:60px;font-size:11px;height:22px;">
         </div>
-        <div id="note-type" style="color:#fff;font-size:14px;text-align:center;min-height:22px;line-height:22px;">♩ 1/4</div>
         <div style="text-align:center;">
-          <label style="font-size:11px;">Swing:</label><br>
-          <button id="swing-btn" style="width:60px;height:28px;min-width:60px;min-height:28px;">Off</button>
+          <label for="fundamental-slider" style="font-size:11px;">Fundamental</label>
+          <div style="display:flex;align-items:center;gap:4px;justify-content:center;">
+            <input type="range" id="fundamental-slider" min="80" max="1500" value="262" style="width:80px;">
+            <button id="fundamental-harmony-btn" title="Plays fundamental tone with harmonics on accented notes" style="width:28px;height:28px;padding:2px;font-size:16px;background:#888;border:1px solid #666;border-radius:4px;min-width:28px;">🎵</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;justify-content:center;">
+            <input type="number" id="fundamental-input" min="80" max="1500" value="262" style="width:60px;font-size:11px;height:22px;">
+            <button id="freq-mode-btn" style="width:28px;height:22px;font-size:9px;background:#666;border:1px solid #888;border-radius:3px;color:#fff;cursor:pointer;">Hz</button>
+          </div>
         </div>
       </div>
       
-      <!-- Column 5: Speaker + Delay -->
+      <!-- Column 5: Speaker + Delay + Swing -->
       <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
         <button id="music-toggle" class="control-btn" style="width:60px;height:32px;font-size:20px;min-width:60px;min-height:32px;">🔊</button>
-        <button id="delay-toggle" class="control-btn" style="width:60px;height:32px;font-size:11px;min-width:60px;min-height:32px;background:#9900cc;">Delay</button>
+        <button id="delay-toggle" class="control-btn" title="Echo effect with feedback - decays over 1.5 seconds when turned off" style="width:60px;height:32px;font-size:11px;min-width:60px;min-height:32px;background:#9900cc;">Delay</button>
+        <button id="swing-btn" title="Adds random rhythmic variations and glitch effects to the music" style="width:60px;height:28px;min-width:60px;min-height:28px;">Off</button>
       </div>
       
-      <!-- Column 6: Reset + Quit -->
+      <!-- Column 6: Reset + Quit + Note Type -->
       <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
         <button id="reset-btn" class="control-btn" style="width:60px;height:32px;min-width:60px;min-height:32px;">Reset</button>
         <button id="quit-btn" class="control-btn" style="width:60px;height:32px;min-width:60px;min-height:32px;">Quit</button>
+        <div id="note-type" title="Note subdivision changes based on number of visible cards: 1-13 cards = quarter notes, 14-26 = eighth notes, 27-39 = sixteenth notes, 40+ = thirty-second notes" style="color:#fff;font-size:14px;text-align:center;min-height:22px;line-height:22px;cursor:help;">♩ 1/4</div>
       </div>
     </div>
   </div>

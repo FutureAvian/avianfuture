@@ -102,6 +102,14 @@ function handlePickupCardClick(e) {
 function handlePickupDragStart(e) {
   e.dataTransfer.setData('text/plain', e.target.getAttribute('data-idx'));
   e.target.style.cursor = 'grabbing';
+  
+  // If dragging from stack, flip face up
+  let idx = parseInt(e.target.getAttribute('data-idx'));
+  let card = cardPickupCards[idx];
+  if (Math.abs(card.x - 450) < 10 && Math.abs(card.y - 130) < 10 && !card.faceUp) {
+    card.faceUp = true;
+    render53CardPickup();
+  }
 }
 
 function handlePickupDragOver(e) {
@@ -138,10 +146,15 @@ function stackCards() {
 }
 
 // --- Music Logic ---
+let musicLoopInterval = null;
+
 function start53PickupMusic() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   musicEnabled = true;
   lastNoteIdx = null;
+  
+  // Clear any existing loop
+  if (musicLoopInterval) clearInterval(musicLoopInterval);
   
   function playNextCard() {
     if (!gameStarted) return;
@@ -589,15 +602,30 @@ function createCardElement(card, idx) {
 function addControlButtons() {
   let pickupArea = document.getElementById('pickup-area');
   let controlsHtml = `
-    <div style="text-align: center; margin-top: 10px;">
-      <button id="all-face-up" style="background: #0080ff; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">All Face Up</button>
-      <button id="all-face-down" style="background: #ff6600; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">All Face Down</button>
-      <button id="stack-cards-btn" style="background: #4040ff; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">Stack Cards</button>
-      <button id="delay-toggle" style="background: #9900cc; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">Delay: Off</button>
-      <button id="sustain-toggle" style="background: #ff0080; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; user-select: none; min-width: 160px; transition: background 0.2s;">Sustain ⇧</button>
-      <button id="swing-btn-pickup" style="background: #cccc00; color: #000; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">Swing: Off</button>
-      <button id="random-durations" style="background: #00cc66; color: #fff; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 160px; transition: background 0.2s;">Random Durations</button>
-      <button id="rest-toggle" style="background: #ffcc00; color: #000; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; margin: 0 5px; min-width: 140px; transition: background 0.2s;">Random Rests</button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 20px; max-width: 800px; margin-left: auto; margin-right: auto;">
+      <!-- Column 1: Face controls -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="all-face-up" style="background: #0080ff; color: #fff; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 12px;">All Face Up</button>
+        <button id="all-face-down" style="background: #ff6600; color: #fff; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 12px;">All Face Down</button>
+      </div>
+      
+      <!-- Column 2: Stack and Swing -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="stack-cards-btn" style="background: #4040ff; color: #fff; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 12px;">Stack Cards</button>
+        <button id="swing-btn-pickup" style="background: #cccc00; color: #000; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 12px;">Swing: Off</button>
+      </div>
+      
+      <!-- Column 3: Delay and Sustain -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="delay-toggle" style="background: #9900cc; color: #fff; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 12px;">Delay: Off</button>
+        <button id="sustain-toggle" style="background: #ff0080; color: #fff; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; user-select: none; height: 40px; transition: background 0.2s; font-size: 12px;">Sustain ⇧</button>
+      </div>
+      
+      <!-- Column 4: Duration and Rest -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="random-durations" style="background: #00cc66; color: #fff; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 11px;">Random Durations</button>
+        <button id="rest-toggle" style="background: #ffcc00; color: #000; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 12px;">Random Rests</button>
+      </div>
     </div>
   `;
   pickupArea.insertAdjacentHTML('afterend', controlsHtml);
