@@ -95,19 +95,22 @@ Restored 9-28 archive version as the main codebase and implemented comprehensive
 
 ---
 
-## Latest Updates (October 4, 2025 - Final)
+## Latest Updates (October 4, 2025 - Final Polish)
 
 ### SoliTone HUD Refinements
 - **Perfect alignment**: Listen button now aligns with 2x2 waveform grid top
 - **Tuning dropdown**: Bottom edge aligns with 2x2 grid bottom
 - **Reorganized columns**: Fundamental controls moved to Column 4 under BPM
-- **BMP slider positioning**: Top aligns with Listen button height
-- **Centered BPM readout**: Number input always centered under slider
-- **Swing moved**: Now under Delay button in Column 5
-- **Note subdivision**: Moved to Column 6 under Quit with helpful tooltip
+- **BPM slider positioning**: Top aligns with Listen button height
+- **BPM readout repositioned**: Now inline with BPM label, editable text input
+- **Swing moved**: Now under Delay button in Column 5, shows "Swing On/Off"
+- **Note subdivision**: Moved to Column 6 under Quit, clickable to disable (red with white stroke)
 - **Hz/Notes toggle**: Click Hz button to switch to musical note names (C4, A#3, etc.)
 - **Enhanced tooltips**: All new controls have descriptive tooltips
 - **Improved fundamental button**: Light gray background when off, better visibility
+- **Larger title**: SoliTone title increased 50% and centered with 2x2 grid
+- **Delay button**: White text for better visibility
+- **No spinner arrows**: All number inputs use clean text fields
 
 ### Advanced Transitions
 - **Smooth swing disable**: Takes 2 beats to fade out instead of instant stop
@@ -127,10 +130,12 @@ Restored 9-28 archive version as the main codebase and implemented comprehensive
 - **Visual click feedback**: All buttons flash brighter on click
 
 ### Technical Improvements
-- **Fundamental frequency locking**: Can toggle between Hz and musical notes
+- **Fundamental frequency locking**: Can toggle between Hz and musical notes with proper conversion
+- **Smart input handling**: Real-time validation and blur correction for all text inputs
 - **Smooth audio transitions**: No more jarring stops when effects are disabled
 - **Memory management**: Proper cleanup of audio nodes and timeouts
 - **Responsive design**: All controls maintain consistent sizing
+- **Auto-subdivision toggle**: Note subdivision can be disabled, defaults to enabled
 
 ---
 
