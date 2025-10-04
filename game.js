@@ -803,19 +803,10 @@ function showQuitDialog() {
     endScreen.innerHTML = `
       <div style="font-size: 2em; margin-bottom: 40px;">Choose your fate:</div>
       <button id="quit-forever" style="background: #c00; color: #fff; border: none; padding: 16px 32px; border-radius: 8px; cursor: pointer; font-size: 1.2em; margin: 10px;">Quit... Forever</button>
-      <button id="card-pickup" style="background: #060; color: #fff; border: none; padding: 16px 32px; border-radius: 8px; cursor: pointer; font-size: 1.2em; margin: 10px;">Play 53 Card Pickup</button>
       <button id="go-back" style="background: #0066cc; color: #fff; border: none; padding: 16px 32px; border-radius: 8px; cursor: pointer; font-size: 1.2em; margin: 10px;">Go Back!</button>
     `;
 
     document.getElementById('quit-forever').onclick = () => quitForever();
-    document.getElementById('card-pickup').onclick = () => {
-      // Stop any quit screen music before switching
-      stopWindSounds();
-      morseTimeouts.forEach(timeout => clearTimeout(timeout));
-      morseTimeouts = [];
-      // Auto-start pickup game
-      window.location.href = 'pickup.html?autostart=true';
-    };
     document.getElementById('go-back').onclick = () => {
       endScreen.style.display = 'none';
       gameContainer.style.opacity = 1;
