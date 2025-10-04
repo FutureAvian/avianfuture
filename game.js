@@ -143,14 +143,10 @@ function renderGameBoard() {
   if (checkWin() && !isGameOver) {
     isGameOver = true;
     stopMusicLoop();
+    // Trigger victory sequence immediately
     setTimeout(() => {
-      // Re-enable music context for victory scale
-      if (!audioCtx || audioCtx.state === 'closed') {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      playVictoryScale();
       endGame(true);
-    }, 3500);
+    }, 1000);
   }
   
   // Check for autocomplete offer
