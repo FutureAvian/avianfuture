@@ -1,0 +1,305 @@
+body {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: #fff;
+  font-family: sans-serif;
+  margin: 0;
+  transition: background 0.5s ease;
+  overflow-x: hidden;
+}
+#hud {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  background: rgba(0,0,0,0.7);
+  width: 100vw;
+  position: relative;
+  box-sizing: border-box;
+}
+#title {
+  position: absolute;
+  left: calc(50% - 300px - 150px);
+  margin: 0;
+}
+#hud-controls {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+#title {
+  margin: 0;
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 2px 2px 4px #000;
+}
+#bpm-control, #fundamental-control {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#fundamental-control label {
+  display: block;
+  text-align: center;
+  margin-bottom: 4px;
+}
+#fundamental-display {
+  text-align: center;
+  margin-top: 2px;
+}
+#control-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+#sliders-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+#button-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+#controls-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  margin-top: 8px;
+}
+#waveform-control, #music-trigger, #swing-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100px;
+}
+#bpm-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  color: #ccc;
+  margin-top: 2px;
+  position: relative;
+}
+#bpm-value {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+#bpm-control label {
+  display: block;
+  text-align: center;
+  margin-bottom: 4px;
+}
+#swing-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#swing-btn {
+  background: #ff9900;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 80px;
+  height: 36px;
+}
+#waveform-control label {
+  margin-right: 8px;
+}
+#fundamental-input, #bpm-value {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+#music-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Style labels in controls row */
+#controls-row label {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 0.9em;
+  text-align: center;
+}
+/* Keep BPM label alignment */
+#bpm-labels span:first-child {
+  width: 70px;
+  text-align: left;
+  display: inline-block;
+}
+#listen-btn {
+  background: #00ccff;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 80px;
+  height: 36px;
+}
+#music-toggle {
+  background: #060;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.2em;
+  width: 80px;
+}
+#waveform-btn {
+  background: #ff3399;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 80px;
+  height: 36px;
+}
+#quit-btn, #reset-btn {
+  background: #c00;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 80px;
+}
+#reset-btn {
+  background: #666;
+}
+#start-menu {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(45deg, #8b0000, #000000, #dc143c, #000000);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+#start-menu h1 {
+  font-size: 4em;
+  margin-bottom: 32px;
+  text-shadow: 4px 4px 8px #000;
+}
+#play-btn {
+  background: #060;
+  color: #fff;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+#game-container {
+  margin: 32px auto;
+  max-width: 900px;
+  min-height: 400px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 12px;
+  box-shadow: 0 0 32px #000a;
+  position: relative;
+  padding: 20px;
+}
+#end-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.95);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  z-index: 100;
+  transition: opacity 1s;
+}
+.pile.foundation {
+  width: 60px;
+  height: 90px;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  background: rgba(255, 215, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pile.stock, .pile.waste {
+  width: 60px;
+  height: 90px;
+  border: 2px solid #888;
+  border-radius: 8px;
+  background: rgba(136, 136, 136, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pile.foundation .card,
+.pile.stock .card,
+.pile.waste .card {
+  margin-bottom: 0 !important;
+}
+.card.playing {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+.pile-container {
+  position: relative;
+}
+.flash-indicator {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 68px;
+  height: 98px;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  pointer-events: none;
+  transition: border-color 0.1s ease;
+}
+.flash-indicator.flashing {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+}
+.pile.tableau {
+  display: flex;
+  flex-direction: column;
+  min-height: 90px;
+}
+.tableau-placeholder {
+  width: 60px;
+  height: 90px;
+  border: 2px dashed #555;
+  border-radius: 8px;
+  background: rgba(85, 85, 85, 0.1);
+  opacity: 0.6;
+}
+#skull {
+  width: 128px;
+  height: 128px;
+  margin: 32px auto;
+  display: block;
+}

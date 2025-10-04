@@ -1,6 +1,6 @@
 /*
  * SoliTone - 53 Card Pickup Game
- * Copyright (c) 2025 Clint Higgins
+ * Copyright (c) 2024 Clint Higgins
  * 
  * Original game design and implementation by Clint Higgins.
  */
@@ -11,10 +11,6 @@
 let gameStarted = false;
 let cardPickupCards = [];
 let musicStepIdx = 0;
-let swingEnabled = false;
-let musicHasStarted = false;
-let swingPattern = [];
-let swingPatternIdx = 0;
 let delayEnabled = false;
 let sustainEnabled = false;
 let delayNode = null;
@@ -35,7 +31,6 @@ const listenBtn = document.getElementById('listen-btn');
 const musicToggle = document.getElementById('music-toggle');
 const waveformBtn = document.getElementById('waveform-btn');
 const startMenu = document.getElementById('start-menu');
-const swingBtn = document.getElementById('swing-btn');
 const playBtn = document.getElementById('play-btn');
 const backBtn = document.getElementById('back-btn');
 const resetBtn = document.getElementById('reset-btn');
@@ -52,7 +47,7 @@ function create53CardPickup() {
         faceUp: Math.random() > 0.5,
         x: Math.random() * 800 + 50,
         y: Math.random() * 200 + 20,
-        rotation: Math.random() * 360
+        rotation: 0
       });
     }
   }
@@ -61,7 +56,7 @@ function create53CardPickup() {
     faceUp: Math.random() > 0.5,
     x: Math.random() * 800 + 50,
     y: Math.random() * 200 + 20,
-    rotation: Math.random() * 360
+    rotation: 0
   });
 }
 
@@ -121,16 +116,10 @@ function handlePickupDrop(e) {
 
 // --- Music Logic ---
 function start53PickupMusic() {
-  if (!audioCtx || audioCtx.state === 'closed') {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   musicEnabled = true;
   lastNoteIdx = null;
   
-  if (swingEnabled) {
-    generateSwingPattern();
-  }
-
   function playNextCard() {
     if (!gameStarted) return;
     
@@ -188,17 +177,11 @@ function start53PickupMusic() {
     
     let interval;
     if (randomDurations && durationPattern.length > 0) {
-      let durationIdx = (musicStepIdx -1) % durationPattern.length;
+      let durationIdx = musicStepIdx % durationPattern.length;
       interval = 60000 / bpm / durationPattern[durationIdx];
     } else {
       interval = 60000 / bpm / 2;
     }
-
-    if (swingEnabled && swingPattern.length > 0) {
-      interval *= swingPattern[swingPatternIdx];
-      swingPatternIdx = (swingPatternIdx + 1) % swingPattern.length;
-    }
-
     setTimeout(playNextCard, interval);
   }
   
@@ -293,38 +276,6 @@ function stopAllSustainedNotes() {
     } catch (e) {}
   });
   sustainGains = [];
-}
-
-function generateSwingPattern() {
-  let cardCount = cardPickupCards.filter(card => musicMode === 'faceup' ? card.faceUp : !card.faceUp).length;
-  if (cardCount === 0) {
-    swingPattern = [];
-    return;
-  }
-  let swingCount = Math.floor(Math.random() * 5) + 2; // 2-6 swings per pass
-  swingPattern = new Array(cardCount).fill(1.0);
-
-  for (let i = 0; i < swingCount; i++) {
-    let pos = Math.floor(Math.random() * cardCount);
-    let swingType = Math.floor(Math.random() * 4);
-
-    switch (swingType) {
-      case 0: // Pair grouping - slight delay
-        swingPattern[pos] = 1.15;
-        break;
-      case 1: // Subdivision - quick rush
-        swingPattern[pos] = 0.85;
-        break;
-      case 2: // Beat variation - moderate delay
-        swingPattern[pos] = 1.25;
-        break;
-      case 3: // Triplet feel - subtle 2:1
-        swingPattern[pos] = 1.3;
-        if (pos + 1 < cardCount) swingPattern[pos + 1] = 0.7;
-        break;
-    }
-  }
-  swingPatternIdx = 0;
 }
 
 let isPushing = false;
@@ -425,7 +376,6 @@ waveformBtn.addEventListener('click', () => {
 
 playBtn.addEventListener('click', () => {
   startMenu.style.display = 'none';
-  document.getElementById('hud').style.display = 'flex';
   gameContainer.style.display = 'block';
   gameStarted = true;
   updateBackground();
@@ -434,19 +384,10 @@ playBtn.addEventListener('click', () => {
   gameContainer.innerHTML = '<div id="pickup-area" style="position: relative; width: 900px; height: 300px; margin: 0 auto;"></div>';
   
   // Create cards and drop them in after 1.5 seconds
-  // Music will now wait for a user click to start.
   setTimeout(() => {
     create53CardPickup();
     animateCardDrop();
     start53PickupMusic();
-    // Add a one-time click listener to start the music
-    gameContainer.addEventListener('click', function startMusicOnClick() {
-      if (!musicHasStarted) {
-        start53PickupMusic();
-        musicHasStarted = true;
-        gameContainer.removeEventListener('click', startMusicOnClick); // Remove listener after first use
-      }
-    }, { once: true }); // Use {once: true} as a fallback, though manual removal is more robust here.
   }, 1500);
 });
 
@@ -459,7 +400,6 @@ backToSolitaire.addEventListener('click', () => {
 });
 
 resetBtn.addEventListener('click', () => {
-  musicHasStarted = false;
   musicStepIdx = 0;
   delayEnabled = false;
   sustainEnabled = false;
@@ -483,13 +423,6 @@ resetBtn.addEventListener('click', () => {
   waveformIndex = 0;
   
   // Shuffle cards to new positions
-  cardPickupCards.forEach(card => {
-    card.x = Math.random() * 800 + 50;
-    card.y = Math.random() * 200 + 20;
-    card.rotation = Math.random() * 360;
-    card.faceUp = Math.random() > 0.5;
-  });
-
   create53CardPickup();
   render53CardPickup();
   updateBackground();
@@ -512,11 +445,6 @@ function animateCardDrop() {
     batches.push(cardPickupCards.slice(i, i + Math.floor(Math.random() * 3) + 5));
   }
   
-  // Clear area before dropping
-  if (pickupArea) {
-    pickupArea.innerHTML = '';
-  }
-
   batches.forEach((batch, batchIndex) => {
     setTimeout(() => {
       batch.forEach((card, cardIndex) => {
@@ -602,18 +530,13 @@ function createCardElement(card, idx) {
 function addControlButtons() {
   let pickupArea = document.getElementById('pickup-area');
   let controlsHtml = `
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 10px;">
-      <div style="display: flex; justify-content: center; gap: 5px;">
-        <button id="all-face-up" style="background: #0080ff; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">All Face Up</button>
-        <button id="all-face-down" style="background: #ff6600; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">All Face Down</button>
-        <button id="reshuffle-btn" style="background: #c00; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">Reshuffle</button>
-      </div>
-      <div style="display: flex; justify-content: center; gap: 5px;">
-        <button id="delay-toggle" style="background: #9900cc; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">Delay: Off</button>
-        <button id="sustain-toggle" style="background: #ff0080; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; user-select: none;">Hold to Sustain</button>
-        <button id="random-durations" style="background: #00cc66; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">Random Durations</button>
-        <button id="rest-toggle" style="background: #ffcc00; color: #000; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">Random Rests</button>
-      </div>
+    <div style="text-align: center; margin-top: 10px;">
+      <button id="all-face-up" style="background: #0080ff; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">All Face Up</button>
+      <button id="all-face-down" style="background: #ff6600; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">All Face Down</button>
+      <button id="delay-toggle" style="background: #9900cc; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">Delay: Off</button>
+      <button id="sustain-toggle" style="background: #ff0080; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px; user-select: none;">Hold to Sustain</button>
+      <button id="random-durations" style="background: #00cc66; color: #fff; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">Random Durations</button>
+      <button id="rest-toggle" style="background: #ffcc00; color: #000; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin: 0 5px;">Random Rests</button>
     </div>
   `;
   pickupArea.insertAdjacentHTML('afterend', controlsHtml);
@@ -638,17 +561,6 @@ function setupCardEvents() {
 }
 
 function setupControlButtons() {
-  document.getElementById('reshuffle-btn').addEventListener('click', () => {
-    cardPickupCards.forEach(card => {
-      card.x = Math.random() * 800 + 50;
-      card.y = Math.random() * 200 + 20;
-      card.rotation = Math.random() * 360;
-      if (Math.random() > 0.5) {
-        card.faceUp = !card.faceUp;
-      }
-    });
-    render53CardPickup();
-  });
   document.getElementById('all-face-up').addEventListener('click', () => {
     cardPickupCards.forEach(card => card.faceUp = true);
     updatePickupButtons();
@@ -730,13 +642,6 @@ function setupControlButtons() {
     stopAllSustainedNotes();
   });
 }
-
-swingBtn.addEventListener('click', () => {
-  swingEnabled = !swingEnabled;
-  swingBtn.textContent = swingEnabled ? 'On' : 'Off';
-  swingPatternIdx = 0;
-  if (swingEnabled) generateSwingPattern();
-});
 
 function addHolographicEffect(element) {
   const colors = ['#ff0080', '#0080ff', '#00ff80', '#ff8000', '#8000ff', '#ffff00'];

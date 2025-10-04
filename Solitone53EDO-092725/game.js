@@ -1,6 +1,6 @@
 /*
  * SoliTone - Musical Solitaire Game
- * Copyright (c) 2024 Clint Higgins
+ * Copyright (c) 2025 Clint Higgins
  * 
  * Musical enhancements, visual effects, and game modifications
  * are original works by Clint Higgins.
@@ -137,10 +137,7 @@ function renderGameBoard() {
   });
   if (checkWin() && !isGameOver) {
     stopMusicLoop();
-    setTimeout(() => {
-      playVictoryScale();
-      endGame(true);
-    }, 3500);
+    endGame(true);
   }
   
   // Check for autocomplete offer
@@ -1023,7 +1020,7 @@ function playVictoryScale() {
   for (let i = 0; i <= 53; i++) {
     let isAccented = majorIntervals.includes(i);
     let osc = audioCtx.createOscillator();
-    osc.type = waveform;
+    osc.type = 'sine';
     osc.frequency.value = edoFreq(i);
     let gain = audioCtx.createGain();
     gain.gain.value = isAccented ? 0.3 : 0.15;
@@ -1037,7 +1034,7 @@ function playVictoryScale() {
   for (let rep = 0; rep < 15; rep++) {
     // Note 0
     let osc1 = audioCtx.createOscillator();
-    osc1.type = waveform;
+    osc1.type = 'sine';
     osc1.frequency.value = edoFreq(0);
     let gain1 = audioCtx.createGain();
     gain1.gain.value = 0.3;
@@ -1048,7 +1045,7 @@ function playVictoryScale() {
     
     // Note 53
     let osc53 = audioCtx.createOscillator();
-    osc53.type = waveform;
+    osc53.type = 'sine';
     osc53.frequency.value = edoFreq(53);
     let gain53 = audioCtx.createGain();
     gain53.gain.value = 0.3;
@@ -1062,7 +1059,7 @@ function playVictoryScale() {
   for (let i = 0; i <= 53; i++) {
     let isAccented = majorIntervals.includes(i);
     let osc = audioCtx.createOscillator();
-    osc.type = waveform;
+    osc.type = 'sine';
     osc.frequency.value = edoFreq(i);
     let gain = audioCtx.createGain();
     gain.gain.value = isAccented ? 0.3 : 0.15;
@@ -1076,7 +1073,7 @@ function playVictoryScale() {
   for (let rep = 0; rep < 5; rep++) {
     // Note 0
     let osc1 = audioCtx.createOscillator();
-    osc1.type = waveform;
+    osc1.type = 'sine';
     osc1.frequency.value = edoFreq(0);
     let gain1 = audioCtx.createGain();
     gain1.gain.value = 0.3;
@@ -1087,7 +1084,7 @@ function playVictoryScale() {
     
     // Note 53
     let osc53 = audioCtx.createOscillator();
-    osc53.type = waveform;
+    osc53.type = 'sine';
     osc53.frequency.value = edoFreq(53);
     let gain53 = audioCtx.createGain();
     gain53.gain.value = 0.3;
