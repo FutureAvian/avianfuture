@@ -1,6 +1,6 @@
 /*
  * SoliTone - Musical Solitaire Game
- * Copyright (c) 2024 Clint Higgins
+ * Copyright (c) 2025 Clint Higgins
  * 
  * Musical enhancements, visual effects, and game modifications
  * are original works by Clint Higgins.
@@ -27,10 +27,6 @@ let gameStarted = false;
 let lastNoteIdx = null;
 let autoCompleteOffered = false;
 let endOptionsShown = false;
-let delayEnabled = false;
-let delayNode = null;
-let feedbackNode = null;
-let fundamentalHarmonyEnabled = false;
 
 // --- DOM Elements ---
 const bpmSlider = document.getElementById('bpm-slider');
@@ -41,7 +37,6 @@ const fundamentalInput = document.getElementById('fundamental-input');
 const listenBtn = document.getElementById('listen-btn');
 const musicToggle = document.getElementById('music-toggle');
 const waveformBtn = document.getElementById('waveform-btn');
-
 const startMenu = document.getElementById('start-menu');
 const playBtn = document.getElementById('play-btn');
 const quitBtn = document.getElementById('quit-btn');
@@ -142,6 +137,7 @@ function renderGameBoard() {
   if (checkWin() && !isGameOver) {
     stopMusicLoop();
     setTimeout(() => {
+      musicEnabled = true; // Re-enable music for the victory scale
       playVictoryScale();
       endGame(true);
     }, 3500);
@@ -592,11 +588,11 @@ function playMusicStep() {
   showAccentDisplay(noteIdx, lastNoteIdx, isAdjacent, isAccented);
   
   if (isAdjacent) {
-    let prevCard = cachedTriggeringCards[(musicStepIdx - 1) % cachedTriggeringCards.length];
-    playEDONote(lastNoteIdx, 1.5, prevCard.suit);
-    playEDONote(noteIdx, 1.5, card.suit);
+    // Play both notes sustained for 1 second with 0.5 second fade out
+    playEDONote(lastNoteIdx, 1.5);
+    playEDONote(noteIdx, 1.5);
   } else {
-    playEDONote(noteIdx, 0.15, card.suit);
+    playEDONote(noteIdx);
   }
   
   lastNoteIdx = noteIdx;
@@ -613,15 +609,16 @@ function playGlitchStep() {
   let glitchType = Math.random();
   
   if (glitchType < 0.5) {
+    // DJ Cut - alternate between current and previous note rapidly
     if (lastNoteIdx !== null) {
-      let prevCard = cachedTriggeringCards[(musicStepIdx - 1) % cachedTriggeringCards.length];
-      playEDONote(lastNoteIdx, 0.05, prevCard ? prevCard.suit : null);
-      setTimeout(() => playEDONote(currentNoteIdx, 0.05, currentCard.suit), 25);
+      playEDONote(lastNoteIdx, 0.05); // Very short
+      setTimeout(() => playEDONote(currentNoteIdx, 0.05), 25);
     } else {
-      playEDONote(currentNoteIdx, 0.05, currentCard.suit);
+      playEDONote(currentNoteIdx, 0.05);
     }
   } else {
-    playEDONote(currentNoteIdx, 0.05, currentCard.suit);
+    // Stutter - repeat same note
+    playEDONote(currentNoteIdx, 0.05);
   }
   
   // Highlight with glitch effect
@@ -734,7 +731,6 @@ fundamentalInput.addEventListener('input', e => {
 listenBtn.addEventListener('click', () => {
   musicMode = musicMode === 'faceup' ? 'facedown' : 'faceup';
   listenBtn.textContent = musicMode === 'faceup' ? 'Fronts' : 'Backs';
-  listenBtn.className = musicMode === 'facedown' ? 'backs' : '';
   updateTriggeringCards();
   if (musicEnabled && gameStarted) {
     startMusicLoop();
@@ -1121,7 +1117,6 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     musicEnabled = !musicEnabled;
     musicToggle.textContent = musicEnabled ? '🔊' : '🔇';
-    musicToggle.className = musicEnabled ? 'on' : 'off';
     if (musicEnabled) {
       startMusicLoop();
     } else {
@@ -1133,6 +1128,7 @@ document.addEventListener('keydown', (e) => {
 // --- Start Menu ---
 playBtn.addEventListener('click', () => {
   startMenu.style.display = 'none';
+  document.getElementById('hud').style.display = 'flex';
   gameContainer.style.display = 'block';
   gameStarted = true;
   musicStepIdx = 0;
@@ -1146,7 +1142,6 @@ playBtn.addEventListener('click', () => {
 musicToggle.addEventListener('click', () => {
   musicEnabled = !musicEnabled;
   musicToggle.textContent = musicEnabled ? '🔊' : '🔇';
-  musicToggle.className = musicEnabled ? 'on' : 'off';
   if (musicEnabled && gameStarted) {
     startMusicLoop();
   } else {
@@ -1154,78 +1149,16 @@ musicToggle.addEventListener('click', () => {
   }
 });
 
-// --- Suit Waveform Selectors ---
-const waveforms = ['sine', 'triangle', 'sawtooth', 'square'];
-const waveSymbols = ['~~~', '^v^v', '/|/|', '▢▢▢'];
-let suitIndices = {hearts: 0, diamonds: 0, clubs: 1, spades: 1};
-
-['hearts', 'diamonds', 'clubs', 'spades'].forEach(suit => {
-  document.getElementById(`${suit}-wave`).addEventListener('click', () => {
-    suitIndices[suit] = (suitIndices[suit] + 1) % waveforms.length;
-    suitWaveforms[suit] = waveforms[suitIndices[suit]];
-    document.getElementById(`${suit}-wave`).textContent = waveSymbols[suitIndices[suit]];
-  });
+// --- Waveform Selector ---
+const waveforms = ['sine', 'sawtooth', 'square', 'triangle'];
+let waveformIndex = 0;
+waveformBtn.addEventListener('click', () => {
+  waveformIndex = (waveformIndex + 1) % waveforms.length;
+  waveform = waveforms[waveformIndex];
+  waveformBtn.textContent = waveform.charAt(0).toUpperCase() + waveform.slice(1);
 });
 
-// --- Tuning Dropdown ---
-const tuningDescriptions = [
-  'Alternating Steps: Hearts/clubs alternate even/odd steps, diamonds/spades fill upper range. Creates smooth microtonal intervals.',
-  'Perfect Fifths: Hearts are roots, diamonds are fifths above, clubs fill middle, spades are sevenths/octave. Emphasizes harmonic relationships.',
-  'Major Triads: Hearts are chord roots, diamonds are thirds, spades are fifths. Creates triadic harmonic structures.',
-  'Chromatic Blocks: Each suit occupies consecutive chromatic steps. Provides clear timbral separation by register.'
-];
 
-document.getElementById('tuning-select').addEventListener('change', (e) => {
-  currentTuning = parseInt(e.target.value);
-  e.target.title = tuningDescriptions[currentTuning];
-  updateTriggeringCards();
-  if (musicEnabled && gameStarted) {
-    startMusicLoop();
-  }
-});
-
-// --- Fundamental Harmony Button ---
-const fundamentalHarmonyBtn = document.getElementById('fundamental-harmony-btn');
-if (fundamentalHarmonyBtn) {
-  fundamentalHarmonyBtn.addEventListener('click', () => {
-    fundamentalHarmonyEnabled = !fundamentalHarmonyEnabled;
-    fundamentalHarmonyBtn.style.background = fundamentalHarmonyEnabled ? '#080' : '#444';
-    fundamentalHarmonyBtn.style.borderColor = fundamentalHarmonyEnabled ? '#0f0' : '#666';
-  });
-}
-
-// --- Delay Toggle ---
-const delayToggle = document.getElementById('delay-toggle');
-if (delayToggle) {
-  delayToggle.addEventListener('click', () => {
-    delayEnabled = !delayEnabled;
-    delayToggle.style.background = delayEnabled ? '#cc00ff' : '#9900cc';
-    delayToggle.textContent = delayEnabled ? 'Delay On' : 'Delay';
-    setupDelayEffect();
-  });
-}
-
-function setupDelayEffect() {
-  if (!audioCtx) return;
-  
-  if (delayEnabled && !delayNode) {
-    delayNode = audioCtx.createDelay(1.0);
-    delayNode.delayTime.value = 0.3;
-    feedbackNode = audioCtx.createGain();
-    feedbackNode.gain.value = 0.4;
-    
-    delayNode.connect(feedbackNode);
-    feedbackNode.connect(delayNode);
-    delayNode.connect(audioCtx.destination);
-  } else if (!delayEnabled && delayNode) {
-    try {
-      delayNode.disconnect();
-      feedbackNode.disconnect();
-    } catch (e) {}
-    delayNode = null;
-    feedbackNode = null;
-  }
-}
 
 function autoComplete() {
   // Move all tableau cards to foundations automatically
@@ -1273,10 +1206,6 @@ function updateNoteTypeDisplay() {
   noteTypeEl.textContent = noteType;
 }
 
-// Accent display queue system
-let accentDisplayQueue = [];
-const MAX_ACCENT_LINES = 4;
-
 function showAccentDisplay(noteIdx, lastNoteIdx, isAdjacent, isAccented) {
   let accentEl = document.getElementById('accent-display');
   if (!accentEl) return;
@@ -1295,39 +1224,10 @@ function showAccentDisplay(noteIdx, lastNoteIdx, isAdjacent, isAccented) {
   }
   
   if (text) {
-    // Add new text to queue
-    let lineEl = document.createElement('div');
-    lineEl.textContent = text;
-    lineEl.style.opacity = '1';
-    lineEl.style.transition = 'opacity 0.3s';
-    lineEl.style.marginBottom = '4px';
-    
-    accentDisplayQueue.push({element: lineEl, timestamp: Date.now()});
-    accentEl.appendChild(lineEl);
-    
-    // If more than MAX_ACCENT_LINES, fade out oldest
-    if (accentDisplayQueue.length > MAX_ACCENT_LINES) {
-      let oldest = accentDisplayQueue.shift();
-      oldest.element.style.opacity = '0';
-      setTimeout(() => {
-        if (oldest.element.parentNode) {
-          oldest.element.parentNode.removeChild(oldest.element);
-        }
-      }, 300);
-    }
-    
-    // Auto-fade after 1 second
+    accentEl.textContent = text;
     setTimeout(() => {
-      lineEl.style.opacity = '0';
-      setTimeout(() => {
-        if (lineEl.parentNode) {
-          lineEl.parentNode.removeChild(lineEl);
-        }
-        // Remove from queue
-        let idx = accentDisplayQueue.findIndex(item => item.element === lineEl);
-        if (idx !== -1) accentDisplayQueue.splice(idx, 1);
-      }, 300);
-    }, 1000);
+      if (accentEl) accentEl.textContent = '';
+    }, 2000);
   }
 }
 

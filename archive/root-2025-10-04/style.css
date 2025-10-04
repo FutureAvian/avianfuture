@@ -1,0 +1,269 @@
+/*
+ * SoliTone - Shared Styles
+ * Copyright (c) 2025 Clint Higgins
+ */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: background 0.5s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* --- Cursor Styles --- */
+body, html {
+  cursor: grab !important;
+}
+
+body:active {
+  cursor: grabbing !important;
+}
+
+button, input, label, select {
+  cursor: pointer !important;
+}
+
+/* --- Layout --- */
+#hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 12px 20px;
+  display: none; /* Hide by default, show when game starts */
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+#hud #title {
+  margin: 0 0 12px 0;
+  font-size: 1.8em;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+#start-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
+  background: linear-gradient(45deg, #8b0000, #000000, #dc143c, #000000);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+#game-container, #end-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  padding-top: 140px; /* Space for HUD */
+}
+
+/* --- HUD Controls --- */
+.solitone-game #hud-controls {
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.solitone-game #control-grid {
+  display: contents; /* Allow grid items to be direct children of hud-controls */
+}
+
+.solitone-game #sliders-row {
+  display: contents;
+}
+
+.solitone-game #controls-row {
+  display: contents;
+}
+
+.solitone-game #bpm-control, .solitone-game #fundamental-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.solitone-game #bpm-control label,
+.solitone-game #fundamental-control label {
+  font-size: 0.85em;
+  margin-bottom: 2px;
+}
+
+.solitone-game #bpm-control input[type="range"],
+.solitone-game #fundamental-control input[type="range"] {
+  width: 120px;
+}
+
+.solitone-game #waveform-control, .solitone-game #music-trigger, .solitone-game #swing-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.solitone-game #waveform-control label,
+.solitone-game #music-trigger label,
+.solitone-game #swing-control label {
+  font-size: 0.85em;
+  margin-bottom: 2px;
+}
+
+.solitone-game #button-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+/* --- Buttons --- */
+button {
+  font-weight: bold;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 8px 16px;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+#play-btn, #back-to-solitaire {
+  background: #060;
+  color: #fff;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2em;
+  margin: 10px;
+}
+
+#back-to-solitaire {
+  background: #c00;
+}
+
+#quit-btn, #back-btn {
+  background: #c00;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* --- Game Board Elements --- */
+.pile.foundation {
+  width: 60px;
+  height: 90px;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.pile.stock, .pile.waste {
+  width: 60px;
+  height: 90px;
+  border: 2px solid #888;
+  border-radius: 8px;
+  background: rgba(136, 136, 136, 0.1);
+}
+
+.pile .card {
+  margin-bottom: 0 !important;
+}
+
+.card.playing {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.pile-container {
+  position: relative;
+}
+
+.flash-indicator {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 68px;
+  height: 98px;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  pointer-events: none;
+  transition: border-color 0.1s ease;
+}
+
+.tableau-placeholder {
+  width: 60px;
+  height: 90px;
+  border: 2px dashed #555;
+  border-radius: 8px;
+  background: rgba(85, 85, 85, 0.1);
+  opacity: 0.6;
+}
+
+/* --- 53 Card Pickup Elements --- */
+.pickup-card {
+  position: absolute;
+  width: 60px;
+  height: 90px;
+  cursor: grab;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+
+.joker-card {
+  background: white;
+  border: 2px solid black;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* --- 53 Card Pickup Buttons --- */
+#all-face-up { background: #0080ff; }
+#all-face-down { background: #ff6600; }
+#reshuffle-btn { background: #c00; }
+#delay-toggle { background: #9900cc; }
+#sustain-toggle { background: #ff0080; user-select: none; }
+#random-durations { background: #00cc66; }
+#rest-toggle { background: #ffcc00; color: #000; }
+
+/* Specific button styles for pickup game */
+#all-face-up, #all-face-down, #reshuffle-btn, #delay-toggle, #sustain-toggle, #random-durations, #rest-toggle {
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#rest-toggle {
+  color: #000;
+}
