@@ -718,7 +718,7 @@ function setupControlButtons() {
     e.preventDefault();
     sustainEnabled = false;
     sustainBtn.style.background = '#ff0080';
-    sustainBtn.textContent = 'Hold to Sustain';
+    sustainBtn.textContent = 'Sustain ⇧';
     stopAllSustainedNotes();
   });
 }

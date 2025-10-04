@@ -1139,9 +1139,19 @@ document.addEventListener('keydown', (e) => {
 playBtn.addEventListener('click', () => {
   startMenu.style.display = 'none';
   gameContainer.style.display = 'block';
+  document.getElementById('hud').style.display = 'flex';
   gameStarted = true;
   musicStepIdx = 0;
   lastNoteIdx = null;
+  
+  // Initialize audio context on user interaction
+  if (!audioCtx || audioCtx.state === 'closed') {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  
   updateBackground();
   setupGame();
   setTimeout(() => startMusicLoop(), 1000);
