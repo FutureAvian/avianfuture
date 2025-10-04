@@ -29,6 +29,8 @@ const fundamentalSlider = document.getElementById('fundamental-slider');
 const fundamentalInput = document.getElementById('fundamental-input');
 const listenBtn = document.getElementById('listen-btn');
 const musicToggle = document.getElementById('music-toggle');
+const musicStartBtn = document.getElementById('music-start-btn');
+const musicStopBtn = document.getElementById('music-stop-btn');
 const waveformBtn = document.getElementById('waveform-btn');
 const startMenu = document.getElementById('start-menu');
 const playBtn = document.getElementById('play-btn');
@@ -36,6 +38,9 @@ const backBtn = document.getElementById('back-btn');
 const resetBtn = document.getElementById('reset-btn');
 const gameContainer = document.getElementById('game-container');
 const backToSolitaire = document.getElementById('back-to-solitaire');
+
+// Waveform buttons
+const waveBtns = document.querySelectorAll('.wave-btn');
 
 // --- Game Setup ---
 function create53CardPickup() {
@@ -147,6 +152,7 @@ function stackCards() {
 
 // --- Music Logic ---
 let musicLoopInterval = null;
+let musicLoopTimeout = null;
 
 function start53PickupMusic() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -154,17 +160,18 @@ function start53PickupMusic() {
   lastNoteIdx = null;
   
   // Clear any existing loop
+  if (musicLoopTimeout) clearTimeout(musicLoopTimeout);
   if (musicLoopInterval) clearInterval(musicLoopInterval);
   
   function playNextCard() {
-    if (!gameStarted) return;
+    if (!gameStarted || !musicLoopInterval) return;
     
     let triggeringCards = cardPickupCards.filter(card => {
       return musicMode === 'faceup' ? card.faceUp : !card.faceUp;
     });
     
     if (triggeringCards.length === 0) {
-      setTimeout(playNextCard, 60000 / bpm / 2);
+      musicLoopTimeout = setTimeout(playNextCard, 60000 / bpm / 2);
       return;
     }
     
@@ -218,7 +225,7 @@ function start53PickupMusic() {
     } else {
       interval = 60000 / bpm / 2;
     }
-    setTimeout(playNextCard, interval);
+    musicLoopTimeout = setTimeout(playNextCard, interval);
   }
   
   playNextCard();
@@ -356,22 +363,22 @@ function generateRestPattern() {
   }
 }
 
-// --- Control Event Listeners ---
-bpmSlider.addEventListener('input', e => {
-  bpm = parseFloat(bpmSlider.value);
-  bpmValue.value = bpm === 5.3 ? '5.3' : Math.round(bpm);
-  updateBackground();
+// --- Waveform Selector ---
+waveBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Remove selected class from all buttons
+    waveBtns.forEach(b => b.classList.remove('selected'));
+    // Add selected class to clicked button
+    btn.classList.add('selected');
+    // Set waveform based on button data
+    waveform = btn.getAttribute('data-wave');
+  });
 });
 
-bpmValue.addEventListener('input', e => {
-  let val = parseFloat(bpmValue.value);
-  if (val >= BPM_MIN && val <= BPM_MAX) {
-    bpm = val;
-    bpmSlider.value = val;
-    bpmValue.value = val === 5.3 ? '5.3' : Math.round(val);
-    updateBackground();
-  }
-});
+// Initialize first waveform as selected
+if (waveBtns.length > 0) {
+  waveBtns[0].classList.add('selected');
+}
 
 fundamentalSlider.addEventListener('input', e => {
   let rawFreq = parseInt(fundamentalSlider.value);
@@ -397,17 +404,28 @@ listenBtn.addEventListener('click', () => {
   musicStepIdx = 0;
 });
 
+musicStartBtn.addEventListener('click', () => {
+  if (!musicLoopInterval) {
+    start53PickupMusic();
+    musicStartBtn.textContent = '▶️ Playing';
+    musicStartBtn.style.background = '#4CAF50';
+    musicStopBtn.style.background = '#f44336';
+  }
+});
+
+musicStopBtn.addEventListener('click', () => {
+  if (musicLoopInterval) {
+    clearInterval(musicLoopInterval);
+    musicLoopInterval = null;
+    musicStartBtn.textContent = '▶️ Start Loop';
+    musicStartBtn.style.background = '#2196F3';
+    musicStopBtn.style.background = '#666';
+  }
+});
+
 musicToggle.addEventListener('click', () => {
   musicEnabled = !musicEnabled;
   musicToggle.textContent = musicEnabled ? '🔊' : '🔇';
-});
-
-const waveforms = ['sine', 'sawtooth', 'square', 'triangle'];
-let waveformIndex = 0;
-waveformBtn.addEventListener('click', () => {
-  waveformIndex = (waveformIndex + 1) % waveforms.length;
-  waveform = waveforms[waveformIndex];
-  waveformBtn.textContent = waveform.charAt(0).toUpperCase() + waveform.slice(1);
 });
 
 playBtn.addEventListener('click', () => {
@@ -454,6 +472,12 @@ resetBtn.addEventListener('click', () => {
   durationPattern = [];
   restPattern = [];
   sustainGains = [];
+  swingEnabledPickup = false;
+  
+  // Clear music loop
+  if (musicLoopTimeout) clearTimeout(musicLoopTimeout);
+  if (musicLoopInterval) clearInterval(musicLoopInterval);
+  musicLoopInterval = null;
   
   // Reset controls to defaults
   bpm = BPM_DEFAULT;
@@ -464,9 +488,18 @@ resetBtn.addEventListener('click', () => {
   bpmValue.value = BPM_DEFAULT;
   fundamentalSlider.value = FUNDAMENTAL_DEFAULT;
   fundamentalInput.value = FUNDAMENTAL_DEFAULT;
-  waveformBtn.textContent = 'Sine';
   listenBtn.textContent = 'Fronts';
-  waveformIndex = 0;
+  
+  // Reset waveform buttons
+  waveBtns.forEach(b => b.classList.remove('selected'));
+  if (waveBtns.length > 0) {
+    waveBtns[0].classList.add('selected');
+  }
+  
+  // Reset music control buttons
+  musicStartBtn.textContent = '▶️ Start Loop';
+  musicStartBtn.style.background = '#2196F3';
+  musicStopBtn.style.background = '#666';
   
   // Shuffle cards to new positions
   create53CardPickup();
