@@ -843,3 +843,13 @@ fundamentalInput.value = FUNDAMENTAL_DEFAULT;
 bpm = BPM_DEFAULT;
 bpmSlider.value = BPM_DEFAULT;
 bpmValue.value = BPM_DEFAULT;
+
+// --- Auto-start if coming from SoliTone ---
+window.addEventListener('load', () => {
+  if (window.location.search.includes('autostart=true') || document.referrer.includes('index.html')) {
+    // Auto-start the game
+    setTimeout(() => {
+      playBtn.click();
+    }, 500);
+  }
+});
