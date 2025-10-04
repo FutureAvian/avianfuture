@@ -672,7 +672,7 @@ function addControlButtons() {
       <!-- Column 2: Stack and Swing -->
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <button id="stack-cards-btn" style="background: #4040ff; color: #fff; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 12px;">Stack Cards</button>
-        <button id="swing-btn-pickup" style="background: #cccc00; color: #000; border: none; padding: 12px 8px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 12px;">Swing: Off</button>
+        <button id="swing-btn-pickup" style="background: #cccc00; color: #000; border: none; padding: 8px 6px; border-radius: 4px; cursor: pointer; height: 40px; transition: background 0.2s; font-size: 10px; text-align: center; line-height: 1.2;">Swing: Off</button>
       </div>
       
       <!-- Column 3: Delay and Sustain -->

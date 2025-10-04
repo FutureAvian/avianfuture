@@ -1350,7 +1350,7 @@ function autoComplete() {
         if (card.faceUp) {
           for (let f = 0; f < 4; f++) {
             let foundation = gameState.foundations[f];
-            if ((foundation.length === 0 && card.value === 1) || 
+            if ((foundation.length === 0 && card.value === 1) ||
                 (foundation.length > 0 && foundation[foundation.length-1].suit === card.suit && card.value === foundation[foundation.length-1].value + 1)) {
               gameState.tableau[col].pop();
               foundation.push(card);
@@ -1368,6 +1368,11 @@ function autoComplete() {
   }
   renderGameBoard();
   updateTriggeringCards();
+
+  // Check for win after autocomplete
+  if (checkWin()) {
+    setTimeout(() => endGame(true), 1000); // Trigger victory sequence
+  }
 }
 
 function updateNoteType() {
