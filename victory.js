@@ -23,38 +23,15 @@ function showVictoryScreen() {
     const victoryScreen = document.createElement('div');
     victoryScreen.id = 'victory-screen';
     
-    // Add styles for the victory screen
-    victoryScreen.style.position = 'fixed';
-    victoryScreen.style.top = '0';
-    victoryScreen.style.left = '0';
-    victoryScreen.style.width = '100%';
-    victoryScreen.style.height = '100%';
-    victoryScreen.style.background = 'rgba(0, 0, 0, 0.95)';
-    victoryScreen.style.display = 'flex';
-    victoryScreen.style.flexDirection = 'column';
-    victoryScreen.style.justifyContent = 'center';
-    victoryScreen.style.alignItems = 'center';
-    victoryScreen.style.zIndex = '2000';
-    victoryScreen.style.pointerEvents = 'none'; // Allow clicks to pass through to elements behind
-    victoryScreen.style.color = '#00ff00';
-    victoryScreen.style.fontFamily = '"Press Start 2P", "Courier New", monospace';
-    victoryScreen.style.textAlign = 'center';
-    victoryScreen.style.textTransform = 'uppercase';
-    victoryScreen.style.letterSpacing = '2px';
-    
     // Add content with VICTORY screen
     victoryScreen.innerHTML = `
-        <div class="holographic-text" style="font-size: 3em; margin-bottom: 30px; text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;">
+        <div class="holographic-text">
             YOU WON!
         </div>
-        <div class="holographic-subtext" style="font-size: 1.5em; margin-bottom: 40px; text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;">
+        <div class="holographic-subtext">
             CONGRATULATIONS
         </div>
-        <button id="quit-to-start" style="margin-top: 220px; padding: 12px 24px; font-size: 1.2em; position: relative; z-index: 2001; pointer-events: auto; 
-            background: rgba(0, 0, 0, 0.7); color: #0f0; border: 2px solid #0f0; 
-            font-family: 'Press Start 2P', monospace; cursor: pointer;
-            text-shadow: 0 0 5px #0f0; box-shadow: 0 0 10px #0f0;
-            transition: all 0.3s ease;">
+        <button id="quit-to-start">
             QUIT TO START
         </button>
     `;
@@ -95,17 +72,9 @@ function showVictoryScreen() {
     addHolographicEffect(victoryScreen.querySelector('.holographic-text'));
     addHolographicEffect(victoryScreen.querySelector('.holographic-subtext'));
     
-    // Add confetti first (so it's behind the text)
+    // Add confetti container (styling is now in CSS)
     const confettiContainer = document.createElement('div');
     confettiContainer.id = 'confetti-container';
-    confettiContainer.style.position = 'fixed';
-    confettiContainer.style.top = '0';
-    confettiContainer.style.left = '0';
-    confettiContainer.style.width = '100%';
-    confettiContainer.style.height = '100%';
-    confettiContainer.style.pointerEvents = 'none';
-    confettiContainer.style.zIndex = '1999';
-    confettiContainer.style.overflow = 'hidden';
     document.body.appendChild(confettiContainer);
     
     // Add victory screen content on top
