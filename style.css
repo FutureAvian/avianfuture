@@ -7,6 +7,377 @@ body {
   overflow-x: hidden;
   background-size: 200% 200%;
   animation: gradientCycle 15s ease-in-out infinite;
+  cursor: grab;
+}
+
+* {
+  cursor: grab !important;
+}
+
+*:active {
+  cursor: grabbing !important;
+}
+
+button, input, label {
+  cursor: pointer !important;
+}
+
+button:active, input:active {
+  cursor: pointer !important;
+}
+
+.wave-btn {
+  width: 45px;
+  height: 35px;
+  background: #333;
+  color: #fff;
+  border: 2px solid #666;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  transition: transform 0.1s;
+}
+
+.wave-btn:active {
+  transform: scale(0.9);
+  background: #555;
+}
+
+#listen-btn {
+  background: #004080;
+  width: 90px;
+  height: 28px;
+  min-width: 90px;
+  min-height: 28px;
+}
+
+#listen-btn.backs {
+  background: #ff8000;
+}
+
+#music-toggle.on {
+  background: #008000;
+}
+
+#music-toggle.off {
+  background: #800000;
+}
+
+#reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#swing-btn {
+  background: #cccc00;
+  color: #000;
+  width: 60px;
+  height: 28px;
+  min-width: 60px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 5px;
+}
+
+input[type="range"] {
+  accent-color: #888;
+}
+
+input[type="range"]::-webkit-slider-track {
+  background: #000;
+  border: 1px solid #eee;
+  height: 4px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  background: #888;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #000;
+  border: 1px solid #eee;
+  height: 4px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: #888;
+  border: none;
+}
+
+#accent-display {
+  position: absolute;
+  left: 20px;
+  top: 60px;
+  color: #ffff00;
+  font-size: 14px;
+  z-index: 1001;
+  text-shadow: 1px 1px 2px #000;
+}
+
+#hud-controls {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto auto;
+  gap: 24px;
+  padding: 12px 20px;
+  align-items: start;
+  justify-content: center;
+}
+
+#title-container {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+}
+
+#title {
+  margin: 0;
+  font-size: 36px;
+  white-space: nowrap;
+}
+
+#waveforms-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#waveforms-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px;
+  justify-items: center;
+  align-items: center;
+}
+
+.wave-label {
+  text-align: center;
+}
+
+.waveform-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wave-label {
+  color: #fff;
+  font-size: 14px;
+}
+
+#listen-tuning-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
+}
+
+#listen-container {
+  text-align: center;
+  margin-top: 14px;
+}
+
+#listen-container label {
+  font-size: 11px;
+}
+
+#tuning-container {
+  text-align: center;
+}
+
+#tuning-container label {
+  font-size: 11px;
+}
+
+#tuning-select {
+  background: #333;
+  color: #fff;
+  border: 1px solid #666;
+  padding: 3px;
+  border-radius: 4px;
+  width: 140px;
+  height: 28px;
+  font-size: 11px;
+}
+
+#bpm-fundamental-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 90px;
+}
+
+#bpm-container {
+  text-align: center;
+  margin-top: 14px;
+  position: relative;
+}
+
+#bpm-sub-container {
+  position: relative;
+  margin-bottom: 19px;
+  height: 20px;
+}
+
+#bpm-sub-container label {
+  font-size: 11px;
+  position: absolute;
+  left: 0;
+  top: 6px;
+}
+
+#bpm-value {
+  width: 40px;
+  font-size: 11px;
+  height: 18px;
+  text-align: center;
+  border: 1px solid #666;
+  background: #333;
+  color: #fff;
+  border-radius: 2px;
+  position: absolute;
+  left: 75px;
+  top: 0;
+}
+
+#bpm-slider {
+  width: 80px;
+  position: relative;
+  top: -5px;
+}
+
+#fundamental-container {
+  text-align: center;
+}
+
+#fundamental-container label {
+  font-size: 11px;
+}
+
+#fundamental-sub-container-1 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+#fundamental-slider {
+  width: 80px;
+}
+
+#fundamental-harmony-btn {
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  font-size: 16px;
+  background: #888;
+  border: 1px solid #666;
+  border-radius: 4px;
+  min-width: 28px;
+}
+
+#fundamental-sub-container-2 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+#fundamental-input {
+  width: 60px;
+  font-size: 11px;
+  height: 22px;
+  text-align: center;
+  border: 1px solid #666;
+  background: #333;
+  color: #fff;
+  border-radius: 2px;
+}
+
+#freq-mode-btn {
+  width: 28px;
+  height: 22px;
+  font-size: 9px;
+  background: #666;
+  border: 1px solid #888;
+  border-radius: 3px;
+  color: #fff;
+  cursor: pointer;
+}
+
+#speaker-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+#music-toggle {
+  width: 60px;
+  height: 32px;
+  font-size: 20px;
+  min-width: 60px;
+  min-height: 32px;
+}
+
+#delay-toggle {
+  width: 60px;
+  height: 32px;
+  font-size: 11px;
+  min-width: 60px;
+  min-height: 32px;
+  background: #9900cc;
+  color: #fff;
+}
+
+#reset-quit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+#reset-btn {
+  width: 60px;
+  height: 32px;
+  min-width: 60px;
+  min-height: 32px;
+}
+
+#quit-btn {
+  width: 60px;
+  height: 32px;
+  min-width: 60px;
+  min-height: 32px;
+}
+
+#note-type {
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  min-height: 22px;
+  line-height: 22px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.control-btn {
+  border: 1px solid #999;
+  border-radius: 4px;
+  background-color: #333;
+  color: #fff;
+}
+
+#listen-btn {
+  background: #004080;
+}
+
+#delay-toggle {
+  background: #9900cc;
 }
 
 @keyframes gradientCycle {
@@ -152,9 +523,7 @@ body {
 #listen-btn {
   background: #00ccff;
   color: #fff;
-  border: none;
   padding: 8px 12px;
-  border-radius: 4px;
   cursor: pointer;
   width: 80px;
   height: 36px;
@@ -162,12 +531,13 @@ body {
 #music-toggle {
   background: #060;
   color: #fff;
-  border: none;
   padding: 8px 16px;
-  border-radius: 4px;
   cursor: pointer;
   font-size: 1.2em;
   width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 #waveform-btn {
   background: #ff3399;

@@ -783,10 +783,12 @@ listenBtn.addEventListener('click', () => {
 });
 
 // --- Quit Button ---
-quitBtn.addEventListener('click', () => {
-  if (isGameOver) return;
-  showQuitDialog();
-});
+if (quitBtn) {
+  quitBtn.addEventListener('click', () => {
+    if (isGameOver) return;
+    showQuitDialog();
+  });
+}
 
 function showQuitDialog() {
   // Stop the game music loop completely
@@ -817,9 +819,12 @@ function showQuitDialog() {
 
 
 // --- Reset Button ---
-resetBtn.addEventListener('click', () => {
-  location.reload();
-});
+if (resetBtn) {
+  resetBtn.addEventListener('click', () => {
+    setupGame();
+  });
+}
+
 // --- End Game ---
 function endGame(victory) {
   isGameOver = true;
@@ -1254,14 +1259,17 @@ if (fundamentalHarmonyBtn) {
 }
 
 // --- Hz/Notes Mode Toggle ---
-let freqMode = 'hz'; // 'hz' or 'notes'
+let freqMode = 'notes'; // 'hz' or 'notes'
 const freqModeBtn = document.getElementById('freq-mode-btn');
 const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 if (freqModeBtn) {
+  freqModeBtn.textContent = 'Hz'; // Default is notes, so show Hz
+  updateFundamentalDisplay(); // Set initial display
   freqModeBtn.addEventListener('click', () => {
     freqMode = freqMode === 'hz' ? 'notes' : 'hz';
-    freqModeBtn.textContent = freqMode === 'hz' ? 'Hz' : '♪';
+    // Set text to opposite of the NEW state
+    freqModeBtn.textContent = freqMode === 'notes' ? 'Hz' : '♪';
     updateFundamentalDisplay();
   });
 }
