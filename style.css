@@ -393,23 +393,23 @@ input[type="range"]::-moz-range-thumb {
   padding: 0;
   background: rgba(0,0,0,0.8);
   width: 100vw;
-  position: relative;
+  position: relative; /* This is the fix */
   box-sizing: border-box;
 }
-#title {
-  position: absolute;
-  left: calc(50% - 300px - 150px);
-  margin: 0;
-}
+
 #hud-controls {
-  display: flex;
-  gap: 40px;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto auto auto auto auto auto;
+  gap: 24px;
+  padding: 12px 20px;
+  align-items: start;
+  justify-content: center;
 }
+
 #title {
   margin: 0;
-  font-size: 1.8em;
-  font-weight: bold;
+  font-size: 36px;
+  white-space: nowrap;
   color: #fff;
   text-shadow: 2px 2px 4px #000;
 }
@@ -457,6 +457,10 @@ input[type="range"]::-moz-range-thumb {
   align-items: center;
   gap: 4px;
   width: 100px;
+}
+
+#main-container {
+  margin-left: -300px;
 }
 #bpm-labels {
   display: flex;
@@ -565,6 +569,7 @@ input[type="range"]::-moz-range-thumb {
 #start-menu {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
   background: linear-gradient(45deg, #8b0000, #000000, #dc143c, #000000);
   background-size: 400% 400%;
   animation: gradientShift 8s ease-in-out infinite;
