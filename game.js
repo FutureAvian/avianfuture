@@ -691,6 +691,10 @@ function isMatchingCard(element, card, pile, idx) {
 // --- BPM Slider ---
 bpmSlider.addEventListener('input', e => {
   let val = parseFloat(bpmSlider.value);
+  // Update timing module BPM
+  if (typeof TimingModule !== 'undefined') {
+    TimingModule.setBpm(val);
+  }
   bpm = val;
   bpmValue.value = val === 5.3 ? '5.3' : Math.round(val);
   updateBackground();
@@ -701,6 +705,10 @@ bpmSlider.addEventListener('input', e => {
 
 bpmValue.addEventListener('input', e => {
   let val = parseFloat(bpmValue.value);
+  // Update timing module BPM
+  if (typeof TimingModule !== 'undefined') {
+    TimingModule.setBpm(val);
+  }
   if (!isNaN(val) && val >= 5.3 && val <= 530) {
     bpm = val;
     bpmSlider.value = val;
@@ -1360,6 +1368,11 @@ playBtn.addEventListener('click', () => {
   }
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
+  }
+  
+  // Initialize timing module with current BPM
+  if (typeof TimingModule !== 'undefined') {
+    TimingModule.setBpm(bpm);
   }
   
   updateBackground();

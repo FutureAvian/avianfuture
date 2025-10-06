@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SoliTone</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 85, 85, 0.7); }
+      50% { transform: scale(1.5); box-shadow: 0 0 10px 5px rgba(255, 85, 85, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 85, 85, 0); }
+    }
+    #metronome-visualizer {
+      transition: all 0.1s ease-out;
+    }
+  </style>
 </head>
 <body>
   <div id="hud">
@@ -98,6 +108,7 @@
   <div id="game-container" style="display:none;"></div>
   <div id="end-screen" style="display:none;"></div>
   <script src="common.js"></script>
+  <script src="timing.js"></script>
   <script src="game.js"></script>
   <script src="victory.js"></script>
 </body>
