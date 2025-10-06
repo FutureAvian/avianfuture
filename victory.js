@@ -2,6 +2,7 @@
 
 let isVictoryScreenShown = false;
 let audioContext = null;
+let confettiContainer = null;
 
 function showVictoryScreen() {
     if (isVictoryScreenShown) return;
@@ -38,15 +39,34 @@ function showVictoryScreen() {
     
     // Add click handler for the quit button
     victoryScreen.querySelector('#quit-to-start').onclick = () => {
+        // Stop any currently playing victory sound
+        if (window.stopMusicLoop) {
+            window.stopMusicLoop();
+        }
+        
         // Clean up audio context if it exists
         if (audioContext && audioContext.state !== 'closed') {
             audioContext.close();
         }
+        
+        // Clean up confetti if it exists
+        if (confettiContainer) {
+            confettiContainer.remove();
+            confettiContainer = null;
+        }
+        
+        // Remove any 'click to play' button if it exists
+        const playSoundBtn = document.querySelector('.play-victory-sound-btn');
+        if (playSoundBtn) {
+            playSoundBtn.remove();
+        }
+        
         // Hide victory screen and show start menu
         const startMenu = document.getElementById('start-menu');
         if (startMenu) {
             startMenu.style.display = 'flex';
         }
+        
         // Remove victory screen
         victoryScreen.remove();
         isVictoryScreenShown = false;
@@ -72,26 +92,43 @@ function showVictoryScreen() {
     addHolographicEffect(victoryScreen.querySelector('.holographic-text'));
     addHolographicEffect(victoryScreen.querySelector('.holographic-subtext'));
     
-    // Add confetti container (styling is now in CSS)
-    const confettiContainer = document.createElement('div');
+        // Confetti is currently disabled
+    // Uncomment the following code to re-enable confetti:
+    /*
+    // Remove any existing confetti container first
+    const existingConfetti = document.getElementById('confetti-container');
+    if (existingConfetti) {
+        existingConfetti.remove();
+    }
+    
+    // Create new confetti container
+    confettiContainer = document.createElement('div');
     confettiContainer.id = 'confetti-container';
     document.body.appendChild(confettiContainer);
-    
-    // Add victory screen content on top
-    document.body.appendChild(victoryScreen);
     
     // Create confetti after a short delay
     setTimeout(() => {
         createRetroConfetti();
     }, 500);
+    */
+    
+    // Add victory screen content
+    document.body.appendChild(victoryScreen);
     
     // Function to play victory sound
     const playVictorySound = async () => {
         try {
             const ctx = initAudioContext();
+            
+            // Stop any currently playing game music
+            if (window.stopMusicLoop) {
+                window.stopMusicLoop();
+            }
+            
             if (ctx.state === 'suspended') {
                 // If audio is suspended, show a button to enable it
                 const resumeButton = document.createElement('button');
+                resumeButton.className = 'play-victory-sound-btn';
                 resumeButton.textContent = 'CLICK TO PLAY VICTORY SOUND';
                 resumeButton.style.padding = '15px 30px';
                 resumeButton.style.fontSize = '1.2em';
@@ -101,23 +138,23 @@ function showVictoryScreen() {
                 resumeButton.style.color = '#000';
                 resumeButton.style.border = 'none';
                 resumeButton.style.borderRadius = '5px';
-                resumeButton.style.fontFamily = '"Press Start 2P", monospace';
                 resumeButton.style.position = 'fixed';
                 resumeButton.style.top = '60%';
                 resumeButton.style.left = '50%';
                 resumeButton.style.transform = 'translateX(-50%)';
                 resumeButton.style.zIndex = '3000';
-                
+                // Add click handler to resume audio context
                 resumeButton.onclick = async () => {
                     try {
                         await ctx.resume();
-                        playRetroVictorySound();
-                        resumeButton.textContent = 'PLAYING...';
-                        setTimeout(() => {
-                            resumeButton.style.opacity = '0';
-                            setTimeout(() => resumeButton.remove(), 500);
-                        }, 1000);
+                        resumeButton.remove();
+                        await playRetroVictorySound();
+                        // After victory sound finishes, ensure music stays off
+                        if (window.stopMusicLoop) {
+                            window.stopMusicLoop();
+                        }
                     } catch (e) {
+                        console.error('Error playing victory sound:', e);
                         console.error('Error resuming audio:', e);
                         resumeButton.textContent = 'ERROR - CLICK TO TRY AGAIN';
                     }

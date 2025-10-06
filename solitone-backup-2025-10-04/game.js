@@ -27,76 +27,96 @@ let gameStarted = false;
 let lastNoteIdx = null;
 let autoCompleteOffered = false;
 let endOptionsShown = false;
-let delayEnabled = false;
 let delayNode = null;
 let feedbackNode = null;
 let fundamentalHarmonyEnabled = false;
 let autoSubdivisionEnabled = true;
 
-// --- DOM Elements ---
-const bpmSlider = document.getElementById('bpm-slider');
-const bpmValue = document.getElementById('bpm-value');
-const swingBtn = document.getElementById('swing-btn');
-const fundamentalSlider = document.getElementById('fundamental-slider');
-const fundamentalInput = document.getElementById('fundamental-input');
-const listenBtn = document.getElementById('listen-btn');
-const musicToggle = document.getElementById('music-toggle');
-const waveformBtn = document.getElementById('waveform-btn');
+// Wait for DOM to be ready before initializing elements
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing SoliTone...');
 
-const startMenu = document.getElementById('start-menu');
-const playBtn = document.getElementById('play-btn');
-const quitBtn = document.getElementById('quit-btn');
-const resetBtn = document.getElementById('reset-btn');
-const gameContainer = document.getElementById('game-container');
-const endScreen = document.getElementById('end-screen');
+  // --- DOM Elements ---
+  const bpmSlider = document.getElementById('bpm-slider');
+  const bpmValue = document.getElementById('bpm-value');
+  const swingBtn = document.getElementById('swing-btn');
+  const fundamentalSlider = document.getElementById('fundamental-slider');
+  const fundamentalInput = document.getElementById('fundamental-input');
+  const listenBtn = document.getElementById('listen-btn');
+  const musicToggle = document.getElementById('music-toggle');
+  const waveformBtn = document.getElementById('waveform-btn');
 
+  const startMenu = document.getElementById('start-menu');
+  const playBtn = document.getElementById('play-btn');
+  const quitBtn = document.getElementById('quit-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const gameContainer = document.getElementById('game-container');
+  const endScreen = document.getElementById('end-screen');
 
+  console.log('DOM elements found:', {
+    startMenu: !!startMenu,
+    playBtn: !!playBtn,
+    gameContainer: !!gameContainer,
+    hud: !!document.getElementById('hud')
+  });
 
-// --- Game Setup ---
-function setupGame() {
-  gameState = createInitialGameState();
-  musicStepIdx = 0;
-  lastNoteIdx = null;
-  autoCompleteOffered = false;
-  endOptionsShown = false;
-  renderGameBoard();
-  updateNoteType();
-  startMusicLoop();
-  gameContainer.onclick = handleCardClick;
-}
+  // --- Start Menu ---
+  if (playBtn && startMenu && gameContainer) {
+    playBtn.addEventListener('click', () => {
+      console.log('🎮 Start button clicked - initializing game...');
 
-function createInitialGameState() {
-  let deck = [];
-  for (let suit of CARD_SUITS) {
-    for (let value of CARD_VALUES) {
-      deck.push({suit, value, faceUp: false});
-    }
+      // Hide title screen immediately
+      startMenu.style.display = 'none';
+
+      // Show game immediately with proper visibility
+      gameContainer.style.display = 'block';
+      gameContainer.style.opacity = '1';
+      gameContainer.style.visibility = 'visible';
+
+      const hud = document.getElementById('hud');
+      if (hud) {
+        hud.style.display = 'flex';
+        hud.style.opacity = '1';
+        hud.style.visibility = 'visible';
+        console.log('✅ HUD shown');
+      } else {
+        console.error('❌ HUD element not found');
+      }
+
+      gameStarted = true;
+      musicStepIdx = 0;
+      lastNoteIdx = null;
+
+      console.log('🎵 Initializing audio context...');
+      // Initialize audio context on user interaction
+      if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        console.log('✅ Audio context created');
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+        console.log('✅ Audio context resumed');
+      }
+
+      console.log('🎲 Setting up game...');
+      updateBackground();
+      setupGame();
+
+      // Force immediate render to ensure cards are visible
+      setTimeout(() => {
+        console.log('🔄 Forcing game render...');
+        renderGameBoard();
+      }, 100);
+
+      console.log('🎼 Starting music in 1 second...');
+      setTimeout(() => {
+        startMusicLoop();
+        console.log('✅ Music started - game is now playable!');
+      }, 1000);
+    });
+  } else {
+    console.error('❌ Start menu elements not found:', { playBtn, startMenu, gameContainer });
   }
-  deck = shuffle(deck);
-  let tableau = [];
-  let deckIdx = 0;
-  for (let col = 0; col < 7; col++) {
-    let colCards = [];
-    for (let row = 0; row <= col; row++) {
-      let card = deck[deckIdx++];
-      card.faceUp = (row === col);
-      colCards.push(card);
-    }
-    tableau.push(colCards);
-  }
-  let stock = deck.slice(deckIdx);
-  let waste = [];
-  let foundations = [[],[],[],[]];
-  return {stock, waste, foundations, tableau, selected: null};
-}
-
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
 
 // --- Rendering ---
 function renderGameBoard() {
@@ -381,11 +401,6 @@ function tryMoveCard(fromPile, fromIdx, toPile) {
       gameState.waste.pop();
     }
     pile.push(card);
-    
-    // Check for win after moving to foundation
-    if (checkWin()) {
-      setTimeout(() => endGame(true), 500);
-    }
     return true;
   }
   return false;
@@ -722,32 +737,30 @@ bpmValue.addEventListener('blur', e => {
 // --- Swing Button ---
 let swingTransitioning = false;
 swingBtn.addEventListener('click', () => {
-    if (swingTransitioning) return;
-    
-    if (swingEnabled) {
-      // Turning off - smooth transition over 2 beats
-      swingTransitioning = true;
-      swingBtn.textContent = 'Fading...';
-      let beatDuration = 60000 / bpm; // milliseconds per beat
-      setTimeout(() => {
-        swingEnabled = false;
-        swingTransitioning = false;
-        swingBtn.textContent = 'Swing Off';
-        swingBtn.classList.remove('swing-on');
-        if (musicEnabled && gameStarted) {
-          startMusicLoop();
-        }
-      }, beatDuration * 2);
-    } else {
-      // Turning on - immediate
-      swingEnabled = true;
-      swingBtn.textContent = 'Swing On';
-      swingBtn.classList.add('swing-on');
+  if (swingTransitioning) return;
+  
+  if (swingEnabled) {
+    // Turning off - smooth transition over 2 beats
+    swingTransitioning = true;
+    swingBtn.textContent = 'Fading...';
+    let beatDuration = 60000 / bpm; // milliseconds per beat
+    setTimeout(() => {
+      swingEnabled = false;
+      swingTransitioning = false;
+      swingBtn.textContent = 'Swing Off';
       if (musicEnabled && gameStarted) {
         startMusicLoop();
       }
+    }, beatDuration * 2);
+  } else {
+    // Turning on - immediate
+    swingEnabled = true;
+    swingBtn.textContent = 'Swing On';
+    if (musicEnabled && gameStarted) {
+      startMusicLoop();
     }
-  });
+  }
+});
 
 // --- Fundamental Frequency ---
 fundamentalSlider.addEventListener('input', e => {
@@ -790,12 +803,10 @@ listenBtn.addEventListener('click', () => {
 });
 
 // --- Quit Button ---
-if (quitBtn) {
-  quitBtn.addEventListener('click', () => {
-    if (isGameOver) return;
-    showQuitDialog();
-  });
-}
+quitBtn.addEventListener('click', () => {
+  if (isGameOver) return;
+  showQuitDialog();
+});
 
 function showQuitDialog() {
   // Stop the game music loop completely
@@ -826,145 +837,15 @@ function showQuitDialog() {
 
 
 // --- Reset Button ---
-if (resetBtn) {
-  resetBtn.addEventListener('click', () => {
-    setupGame();
-  });
-}
-
+resetBtn.addEventListener('click', () => {
+  location.reload();
+});
 // --- End Game ---
-function triggerVictory() {
-  if (isGameOver) return;
-  isGameOver = true;
-  stopMusicLoop();
-  
-  // Create victory screen
-  const victoryScreen = document.createElement('div');
-  victoryScreen.id = 'victory-screen';
-  victoryScreen.style.position = 'fixed';
-  victoryScreen.style.top = '0';
-  victoryScreen.style.left = '0';
-  victoryScreen.style.width = '100%';
-  victoryScreen.style.height = '100%';
-  victoryScreen.style.background = 'rgba(0,0,0,0.9)';
-  victoryScreen.style.display = 'flex';
-  victoryScreen.style.flexDirection = 'column';
-  victoryScreen.style.justifyContent = 'center';
-  victoryScreen.style.alignItems = 'center';
-  victoryScreen.style.zIndex = '1000';
-  victoryScreen.style.color = 'white';
-  victoryScreen.style.fontSize = '3em';
-  victoryScreen.style.textAlign = 'center';
-  
-  victoryScreen.innerHTML = `
-    <div style="margin-bottom: 30px; text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073;">
-      🎉 YOU WON! 🎉
-    </div>
-    <div style="display: flex; gap: 20px; margin-top: 30px;">
-      <button id="play-again" style="
-        padding: 15px 30px;
-        font-size: 1.2rem;
-        background: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: transform 0.2s;
-      ">Play Again</button>
-      <button id="main-menu" style="
-        padding: 15px 30px;
-        font-size: 1.2rem;
-        background: #2196F3;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: transform 0.2s;
-      ">Main Menu</button>
-    </div>
-  `;
-  
-  document.body.appendChild(victoryScreen);
-  
-  // Add button event listeners
-  document.getElementById('play-again').addEventListener('click', () => {
-    location.reload();
-  });
-  
-  document.getElementById('main-menu').addEventListener('click', () => {
-    window.location.href = 'index.html';
-  });
-  
-  // Play victory sound
-  playVictoryScale();
-  
-  // Add confetti effect
-  createConfetti();
-}
-
-function createConfetti() {
-  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
-  
-  for (let i = 0; i < 100; i++) {
-    setTimeout(() => {
-      const confetti = document.createElement('div');
-      confetti.style.position = 'fixed';
-      confetti.style.width = Math.random() * 15 + 5 + 'px';
-      confetti.style.height = Math.random() * 15 + 5 + 'px';
-      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-      confetti.style.left = Math.random() * 100 + 'vw';
-      confetti.style.top = '-20px';
-      confetti.style.zIndex = '1001';
-      confetti.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
-      
-      document.body.appendChild(confetti);
-      
-      const animation = confetti.animate([
-        { top: '-20px', transform: 'rotate(0deg)' },
-        { top: '100vh', transform: 'rotate(720deg)' }
-      ], {
-        duration: 3000 + Math.random() * 4000,
-        easing: 'cubic-bezier(0.1, 0.5, 0.8, 1)'
-      });
-      
-      animation.onfinish = () => {
-        if (confetti.parentNode) {
-          confetti.parentNode.removeChild(confetti);
-        }
-      };
-    }, Math.random() * 2000);
-  }
-}
-
 function endGame(victory) {
-  if (isGameOver) return;
   isGameOver = true;
   stopMusicLoop();
-  
-  if (victory) {
-    // Use the new victory screen module if available
-    if (typeof showVictoryScreen === 'function') {
-      showVictoryScreen();
-    } else {
-      // Fallback to old victory sequence
-      gameContainer.style.opacity = 0;
-      endScreen.style.display = 'flex';
-      endScreen.innerHTML = '';
-      const messageDiv = document.createElement('div');
-      messageDiv.style.fontSize = '3em';
-      messageDiv.style.marginBottom = '40px';
-      endScreen.appendChild(messageDiv);
-      
-      playVictoryScale();
-      messageDiv.textContent = 'WINNER';
-      addHolographicEffect(messageDiv);
-      
-      // Show end options after a delay
-      setTimeout(() => showEndOptions(), 12000);
-    }
-  } else {
-    // Handle game over (loss) case
-    gameContainer.style.opacity = 0;
+  gameContainer.style.opacity = 0;
+  setTimeout(() => {
     endScreen.style.display = 'flex';
     endScreen.innerHTML = '';
     const messageDiv = document.createElement('div');
@@ -972,14 +853,26 @@ function endGame(victory) {
     messageDiv.style.marginBottom = '40px';
     endScreen.appendChild(messageDiv);
     
-    const neonColors = ['#000', '#ff0080', '#0080ff', '#ff8000'];
-    const randomColor = neonColors[Math.floor(Math.random() * neonColors.length)];
-    endScreen.style.backgroundColor = randomColor;
+    if (victory) {
+      // Start victory scale
+      playVictoryScale();
+      messageDiv.textContent = 'WINNER';
+      addHolographicEffect(messageDiv);
+      
+      // Create floating letters effect
+      setTimeout(() => {
+        createFloatingLetters();
+      }, 2000);
+    } else {
+      const neonColors = ['#000', '#ff0080', '#0080ff', '#ff8000'];
+      const randomColor = neonColors[Math.floor(Math.random() * neonColors.length)];
+      endScreen.style.backgroundColor = randomColor;
+      setTimeout(() => startWindSounds(), 2000);
+      playMorseCode('GAME OVER', messageDiv);
+    }
     
-    
-    // Show end options after a delay
-    setTimeout(() => showEndOptions(), 4000);
-  }
+    setTimeout(() => showEndOptions(), victory ? 12000 : 4000);
+  }, 1000);
 }
 
 function fadeInText(text) {
@@ -1097,9 +990,6 @@ function startWindSounds() {
     let source = audioCtx.createBufferSource();
     source.buffer = buffer;
     
-    // Set fixed wind duration (6-10 seconds)
-    const duration = 6 + Math.random() * 4; // 6-10 seconds
-    
     // Higher pitch for faster wind (6-7 second duration)
     if (duration >= 6 && duration <= 7) {
       source.playbackRate.value = 1.3;
@@ -1112,6 +1002,7 @@ function startWindSounds() {
     source.connect(gain).connect(panner).connect(audioCtx.destination);
     
     let startTime = audioCtx.currentTime;
+    let duration = 6 + Math.random() * 4; // 6-10 seconds
     
     // Fade in from left, pan to center, then fade out to right
     panner.pan.setValueAtTime(-1, startTime); // Start left
@@ -1281,46 +1172,9 @@ function playVictoryScale() {
 }
 
 // --- Win Detection ---
-function showMessage(message) {
-  const msg = document.createElement('div');
-  msg.textContent = message;
-  msg.style.position = 'fixed';
-  msg.style.top = '20px';
-  msg.style.left = '50%';
-  msg.style.transform = 'translateX(-50%)';
-  msg.style.padding = '15px 25px';
-  msg.style.background = '#ff5722';
-  msg.style.color = 'white';
-  msg.style.borderRadius = '5px';
-  msg.style.zIndex = '1000';
-  msg.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
-  document.body.appendChild(msg);
-  setTimeout(() => {
-    document.body.removeChild(msg);
-  }, 3000);
-}
-
 function checkWin() {
-  if (!gameState || isGameOver) return false;
-  
-  // Check if all foundations have 13 cards
-  const allFoundationsComplete = gameState.foundations.every(pile => pile.length === 13);
-  if (!allFoundationsComplete) return false;
-  
-  // Additional check - only win if all tableau cards are face-up and stock/waste are empty
-  const allTableauFaceUp = gameState.tableau.every(pile => 
-    pile.every(card => card.faceUp)
-  );
-  const stockEmpty = gameState.stock.length === 0;
-  const wasteEmpty = gameState.waste.length === 0;
-  
-  const hasWon = allTableauFaceUp && stockEmpty && wasteEmpty;
-  
-  if (hasWon) {
-    endGame(true);
-  }
-  
-  return hasWon;
+  if (!gameState) return false;
+  return gameState.foundations.every(pile => pile.length === 13);
 }
 // --- Initialize Controls ---
 fundamental = FUNDAMENTAL_DEFAULT;
@@ -1420,17 +1274,14 @@ if (fundamentalHarmonyBtn) {
 }
 
 // --- Hz/Notes Mode Toggle ---
-let freqMode = 'notes'; // 'hz' or 'notes'
+let freqMode = 'hz'; // 'hz' or 'notes'
 const freqModeBtn = document.getElementById('freq-mode-btn');
 const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 if (freqModeBtn) {
-  freqModeBtn.textContent = 'Hz'; // Default is notes, so show Hz
-  updateFundamentalDisplay(); // Set initial display
   freqModeBtn.addEventListener('click', () => {
     freqMode = freqMode === 'hz' ? 'notes' : 'hz';
-    // Set text to opposite of the NEW state
-    freqModeBtn.textContent = freqMode === 'notes' ? 'Hz' : '♪';
+    freqModeBtn.textContent = freqMode === 'hz' ? 'Hz' : '♪';
     updateFundamentalDisplay();
   });
 }
@@ -1504,72 +1355,7 @@ function setupDelayEffect() {
   }
 }
 
-function showAutoCompleteDialog() {
-  const modal = document.createElement('div');
-  modal.style.position = 'fixed';
-  modal.style.top = '0';
-  modal.style.left = '0';
-  modal.style.width = '100%';
-  modal.style.height = '100%';
-  modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
-  modal.style.display = 'flex';
-  modal.style.justifyContent = 'center';
-  modal.style.alignItems = 'center';
-  modal.style.zIndex = '1000';
-  
-  const dialog = document.createElement('div');
-  dialog.style.background = '#1a1a2e';
-  dialog.style.padding = '30px';
-  dialog.style.borderRadius = '10px';
-  dialog.style.boxShadow = '0 0 20px rgba(0,0,0,0.5)';
-  dialog.style.textAlign = 'center';
-  dialog.style.maxWidth = '400px';
-  dialog.style.width = '80%';
-  
-  dialog.innerHTML = `
-    <h2 style="color: #fff; margin-top: 0;">Auto-Complete Game?</h2>
-    <p style="color: #ccc; margin-bottom: 25px;">This will automatically move all possible cards to the foundations.</p>
-    <div style="display: flex; justify-content: center; gap: 15px;">
-      <button id="confirm-auto" style="padding: 10px 25px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-        Yes, Auto-Complete
-      </button>
-      <button id="cancel-auto" style="padding: 10px 25px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-        Cancel
-      </button>
-    </div>
-  `;
-  
-  modal.appendChild(dialog);
-  document.body.appendChild(modal);
-  
-  document.getElementById('confirm-auto').onclick = function() {
-    document.body.removeChild(modal);
-    if (autoComplete()) {
-      // If auto-complete was successful, checkWin will handle the victory
-      return;
-    }
-    // If auto-complete couldn't complete, show a message
-    showMessage("Auto-complete couldn't complete all moves");
-  };
-  
-  document.getElementById('cancel-auto').onclick = function() {
-    document.body.removeChild(modal);
-  };
-}
-
 function autoComplete() {
-  // Check if all cards are face-up before proceeding
-  const allTableauFaceUp = gameState.tableau.every(pile => 
-    pile.every(card => card.faceUp)
-  );
-  const stockEmpty = gameState.stock.length === 0;
-  const wasteEmpty = gameState.waste.length === 0;
-  
-  if (!allTableauFaceUp || !stockEmpty || !wasteEmpty) {
-    showMessage("Cannot auto-complete: Not all cards are face-up or stock/waste is not empty");
-    return false;
-  }
-
   // Move all tableau cards to foundations automatically
   let moved = true;
   while (moved) {
@@ -1598,12 +1384,11 @@ function autoComplete() {
   }
   renderGameBoard();
   updateTriggeringCards();
-  
+
   // Check for win after autocomplete
   if (checkWin()) {
-    return true;
+    setTimeout(() => endGame(true), 1000); // Trigger victory sequence
   }
-  return false;
 }
 
 function updateNoteType() {
@@ -1724,3 +1509,4 @@ function createFloatingLetters() {
 }
 
 // Don't auto-start game
+});

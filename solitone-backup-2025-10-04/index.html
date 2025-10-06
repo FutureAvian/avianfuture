@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoliTone</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    * { cursor: grab !important; }
+    *:active { cursor: grabbing !important; }
+    button, input, label { cursor: pointer !important; }
+    button:active, input:active { cursor: pointer !important; }
+    .wave-btn {
+      width: 45px;
+      height: 35px;
+      background: #333;
+      color: #fff;
+      border: 2px solid #666;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      transition: transform 0.1s;
+    }
+    .wave-btn:active {
+      transform: scale(0.9);
+      background: #555;
+    }
+    #listen-btn {
+      background: #004080;
+    }
+    #listen-btn.backs {
+      background: #ff8000;
+    }
+    #music-toggle.on {
+      background: #008000;
+    }
+    #music-toggle.off {
+      background: #800000;
+    }
+    #reset-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #swing-btn {
+      background: #cccc00;
+      color: #000;
+      font-size: 10px;
+      font-weight: bold;
+      border-radius: 4px;
+      border: 2px solid #999;
+    }
+    #swing-btn.swing-on {
+      background: #00cc00;
+      color: #fff;
+    }
+    input[type="range"] {
+      accent-color: #888;
+    }
+    input[type="range"]::-webkit-slider-track {
+      background: #000;
+      border: 1px solid #eee;
+      height: 4px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      background: #888;
+    }
+    input[type="range"]::-moz-range-track {
+      background: #000;
+      border: 1px solid #eee;
+      height: 4px;
+    }
+    button.control-btn, button.wave-btn, select, input[type="text"], input[type="range"] {
+      border-radius: 4px;
+      border: 2px solid #999;
+    }
+    button.control-btn:hover, button.wave-btn:hover {
+      border-color: #ccc;
+    }
+  </style>
+</head>
+<body style="cursor: grab;">
+  <div id="hud">
+    <div id="accent-display" style="position: absolute; left: 20px; top: 60px; color: #ffff00; font-size: 14px; z-index: 1001; text-shadow: 1px 1px 2px #000;"></div>
+    <div id="hud-controls" style="display:grid;grid-template-columns:auto auto auto auto auto auto;gap:24px;padding:12px 20px;align-items:start;justify-content:center;">
+      <!-- Column 1: Title -->
+      <div style="text-align:center;display:flex;align-items:center;justify-content:center;height:100px;">
+        <h1 id="title" style="margin:0;font-size:36px;white-space:nowrap;">SoliTone</h1>
+      </div>
+      
+      <!-- Column 2: Waveforms -->
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div style="text-align:center;">
+            <div style="color:#fff;font-size:14px;">♥</div>
+            <button id="hearts-wave" class="wave-btn" data-wave="sine">~~~</button>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:#fff;font-size:14px;">♦</div>
+            <button id="diamonds-wave" class="wave-btn" data-wave="sine">~~~</button>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:#fff;font-size:14px;">♣</div>
+            <button id="clubs-wave" class="wave-btn" data-wave="triangle">^v^v</button>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:#fff;font-size:14px;">♠</div>
+            <button id="spades-wave" class="wave-btn" data-wave="triangle">^v^v</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Column 3: Listen + Tuning -->
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:140px;">
+        <div style="text-align:center;margin-top:14px;">
+          <label style="font-size:11px;">Listen to:</label><br>
+          <button id="listen-btn" style="width:90px;height:28px;min-width:90px;min-height:28px;">Fronts</button>
+        </div>
+        <div style="text-align:center;">
+          <label for="tuning-select" style="font-size:11px;">Tuning:</label><br>
+          <select id="tuning-select" style="background:#333;color:#fff;border:1px solid #666;padding:3px;border-radius:4px;width:140px;height:28px;font-size:11px;">
+            <option value="0">Alternating Steps</option>
+            <option value="1">Perfect Fifths</option>
+            <option value="2">Major Triads</option>
+            <option value="3">Chromatic Blocks</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Column 4: BPM + Fundamental -->
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:90px;">
+        <div style="text-align:center;margin-top:14px;position:relative;">
+          <div style="position:relative;margin-bottom:19px;height:20px;">
+            <label for="bpm-slider" style="font-size:11px;position:absolute;left:0;top:6px;">BPM</label>
+            <input type="text" id="bpm-value" value="106" style="width:40px;font-size:11px;height:18px;text-align:center;border:1px solid #666;background:#333;color:#fff;border-radius:2px;position:absolute;left:75px;top:0;">
+          </div>
+          <input type="range" id="bpm-slider" min="5.3" max="530" value="106" step="0.1" style="width:80px;position:relative;top:-5px;">
+        </div>
+        <div style="text-align:center;">
+          <label for="fundamental-slider" style="font-size:11px;">Fundamental</label>
+          <div style="display:flex;align-items:center;gap:4px;justify-content:center;">
+            <input type="range" id="fundamental-slider" min="80" max="1500" value="262" style="width:80px;">
+            <button id="fundamental-harmony-btn" title="Plays fundamental tone with harmonics on accented notes" style="width:28px;height:28px;padding:2px;font-size:16px;background:#888;border:1px solid #666;border-radius:4px;min-width:28px;">🎵</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;justify-content:center;">
+            <input type="text" id="fundamental-input" value="262" style="width:60px;font-size:11px;height:22px;text-align:center;border:1px solid #666;background:#333;color:#fff;border-radius:2px;">
+            <button id="freq-mode-btn" style="width:28px;height:22px;font-size:9px;background:#666;border:1px solid #888;border-radius:3px;color:#fff;cursor:pointer;">♪</button>
+          </div>
+      </div>
+      
+      <!-- Column 5: Speaker + Delay + Swing -->
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+        <button id="music-toggle" class="control-btn" style="width:60px;height:32px;font-size:20px;min-width:60px;min-height:32px;">🔊</button>
+        <button id="delay-toggle" class="control-btn" title="Echo effect with feedback - decays over 1.5 seconds when turned off" style="width:60px;height:32px;font-size:11px;min-width:60px;min-height:32px;background:#9900cc;color:#fff;">Delay</button>
+        <button id="swing-btn" title="Adds random rhythmic variations and glitch effects to the music" style="width:60px;height:28px;min-width:60px;min-height:28px;">Swing Off</button>
+      </div>
+      
+      <!-- Column 6: Reset + Quit + Note Type -->
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+        <button id="reset-btn" class="control-btn" style="width:60px;height:32px;min-width:60px;min-height:32px;">Reset</button>
+        <div id="note-type" title="Click to toggle automatic note subdivision based on card count" style="color:#fff;font-size:14px;text-align:center;min-height:22px;line-height:22px;cursor:pointer;user-select:none;">♩ 1/4</div>
+      </div>
+    </div>
+  </div>
+  <div id="start-menu">
+    <h1>SoliTone</h1>
+    <button id="play-btn">Play SoliTone</button>
+  </div>
+  <div id="game-container" style="display:none;"></div>
+  <div id="end-screen" style="display:none;"></div>
+  <script src="common.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
